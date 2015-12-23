@@ -30,7 +30,7 @@ while True:
     conn, addr = s.accept();
     
     #On recupere les donnees
-    print("Donnees recues par : "+addr);
+    print("Donnees recues par : "+str(addr));
     data = conn.recv(1024);
     #On trie ce qu'on a recu
     trieData(data);
