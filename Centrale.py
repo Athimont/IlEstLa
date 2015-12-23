@@ -21,17 +21,26 @@ def trieData (conn, data) :
         #On supprime d'éventuels espaces
         pseudo = pseudo.replace(" ", "");
         
-        print("On cree un nouveau compte avec comme pseudo :"+pseudo+"\n");
+        #On vérifie que le pseudo est libre
+        utilise = utilisateurExiste(pseudo);
+        if(utilise) :
         
-        #On cree le compte
-        res = creerCompte(pseudo);
-        
-        if(res):
-            reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
-        
+            reponse = ("Erreur : ce pseudo est deja pris\n");
+
         else :
-            reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
-    
+        
+            print("On cree un nouveau compte avec comme pseudo :"+pseudo+"\n");
+
+            #On cree le compte
+            res = creerCompte(pseudo);
+        
+            if(res):
+                reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
+        
+            else :
+                reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
+
+
         conn.sendall(reponse.encode());
         conn.close();
 
@@ -127,13 +136,13 @@ def reinitialiseBase():
 
     # On insert des utilisateurs
     cursor = conn.cursor();
-    data = {"pseudo" : "moncul"}
+    data = {"pseudo" : "utilisateur1"}
     cursor.execute("""
         INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
     conn.commit();
 
     cursor = conn.cursor();
-    data = {"pseudo" : "moncul2"}
+    data = {"pseudo" : "utilisateur2"}
     cursor.execute("""
         INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
     conn.commit();
