@@ -65,7 +65,7 @@ def actionsDebut():
     reponse = s.recv(1024);
     
     #on ferme la connection
-    s.close();
+    #s.close();
 
     # On affiche la réponse
     print(reponse.decode());
