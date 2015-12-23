@@ -1,48 +1,42 @@
+import socket
+
 # ----- Centrale -----
 
 
+def trieData (data) :
+    action = data.decode();
+    print(action);
 
-
-
-
-
-
-
-
-actionOk = False;
-
-
-while(actionOk == False):
-
-    print("Que voulez-vous faire ?");
-
-    action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
-
-    print (action);
-    if ("comptetw -p" in action) :
-        actionOk = True;
-        
-        #On supprime l'action
-        pseudo = action.replace("comptetw -p", "");
     
-        #On supprime d'éventuels espaces
-        pseudo = pseudo.replace(" ", "");
 
-        input("On crée un nouveau compte avec comme pseudo :"+pseudo+"\n");
 
-    elif ("tweet -p" in action) :
-        actionOk = True;
-        
-        #On supprime l'action
-        pseudo = action.replace("tweet -p", "");
-        
-        #On supprime d'éventuels espaces
-        pseudo = pseudo.replace(" ", "");
-        
-        input("Vous êtes connecté en tant que : "+pseudo+"\n");
-        rechercheMail(mail, tableauColloque);
 
-    else :
-        input("Commande inconnue.");
+        
+#On demarre le serveur
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+
+#On ecoute le port 50007
+s.bind(("localhost", 50007));
+
+#On attend et on n'accepte qu'une seule connexion en meme temps
+s.listen(1);
+
+#On affiche qui se connecte
+conn, addr = s.accept()
+print 'Connected by', addr;
+        
+while True:
+    conn, addr = s.accept();
     
+    #On recupere les donnees
+    data = conn.recv(1024);
+
+    #On ferme la connexion
+    conn.close();
+
+    #On trie ce qu'on a recu
+    trieData(data);
+
+        
+
 
