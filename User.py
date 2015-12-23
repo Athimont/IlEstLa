@@ -35,25 +35,7 @@ class User:
 
 
 
-
-
-
-
-
-def proposeActions():
-
-    print("Que voulez-vous faire ?");
-
-    action = input("1- twitter : tweet –p <message> \n2- Vous abonnez : abonnement -p <abonnement> \n");
-
-
-
-def actionsDebut():
-
-    print("Que voulez-vous faire ?");
-    
-    action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
-
+def envoi(action):
     #On connecte
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
     s.connect(("localhost", 50007));
@@ -76,6 +58,26 @@ def actionsDebut():
 
     else :
         actionsDebut();
+
+
+
+def proposeActions():
+
+    print("Que voulez-vous faire ?");
+
+    action = input("1- twitter : tweet –p <message> \n2- Vous abonnez : abonnement -p <abonnement> \n3- Vous déconnectez: disconnect -p <>\n");
+
+    envoi(action);
+
+
+
+def actionsDebut():
+
+    print("Que voulez-vous faire ?");
+    
+    action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
+
+    envoi(action);
 
 
 actionsDebut();

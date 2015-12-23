@@ -1,5 +1,5 @@
 class Tweet:
-	""" Classe qui défini un tweet par :
+	""" Classe qui defini un tweet par :
 	- son texte
 	- sa date de publication"""
 

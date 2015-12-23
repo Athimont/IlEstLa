@@ -5,7 +5,9 @@ import socket
 import sqlite3
 
 
-# ----- Centrale -----
+# ----- Centrale ----
+
+currentUser ="";
 
 
 def trieData (conn, data) :
@@ -56,11 +58,24 @@ def trieData (conn, data) :
         #On supprime d'éventuels espaces
         pseudo = pseudo.replace(" ", "");
         
-        print("Vous etes connecte en tant que : "+pseudo+"\n");
-        res = ("Vous etes bien connectes : "+pseudo+"\n");
+	#On vérifie l'existance de l'utilisateur
+	existe = utilisateurExiste(pseudo);
+	if (existe):
+            print("Vous etes connecte en tant que : "+pseudo+"\n");
+            res = ("Vous etes bien connectes : "+pseudo+"\n");
+            currentUser = pseudo;
+        else :
+            print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
+            res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
 
+    elif ( "disconnect -p" in action):
+        print("Vous avez ete deconnecte\n");
+        res = ("Vous avez ete deconnecte\n");
+        currentUser = "";
+        conn.sendall(res.encode())
+        conn.close();
 
     else :
         print("Erreur : Commande inconnue.");
