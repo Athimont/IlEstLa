@@ -22,9 +22,20 @@ def trieData (conn, data) :
         pseudo = pseudo.replace(" ", "");
         
         print("On cree un nouveau compte avec comme pseudo :"+pseudo+"\n");
-        res = ("Votre compte a bien ete cree : "+pseudo+"\n");
-        conn.sendall(res.encode());
-        #conn.close();
+        
+        #On cree le compte
+        res = creerCompte(pseudo);
+        
+        if(res):
+            reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
+        
+        else :
+            reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
+    
+        conn.sendall(reponse.encode());
+        conn.close();
+
+        afficheUtilisateurs();
     
 
     elif ("tweet -p" in action) :
@@ -39,14 +50,51 @@ def trieData (conn, data) :
         print("Vous etes connecte en tant que : "+pseudo+"\n");
         res = ("Vous etes bien connectes : "+pseudo+"\n");
         conn.sendall(res.encode())
-        #conn.close();
+        conn.close();
 
 
     else :
         print("Erreur : Commande inconnue.");
         res = ("Erreur : Commande inconnue.\n");
         conn.sendall(res.encode())
-        #conn.close();
+        conn.close();
+
+
+
+
+
+def creerCompte(pseudo):
+
+    conn = sqlite3.connect('base_tweet.db');
+    # On insert l'utilisateurs
+    cursor = conn.cursor();
+    data = {"pseudo" : pseudo}
+    cursor.execute("""
+        INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
+    conn.commit();
+
+    return utilisateurExiste(pseudo);
+
+
+
+
+
+
+
+
+def utilisateurExiste(pseudo):
+
+    conn = sqlite3.connect('base_tweet.db');
+
+    cursor = conn.cursor();
+    data = {"pseudo" : pseudo}
+    cursor.execute("""SELECT * FROM Utilisateur where pseudo= :pseudo""", data)
+    users = cursor.fetchall();
+    
+    if (len(users) > 0) :
+        return True
+    else :
+        return False
 
 
 
@@ -57,6 +105,8 @@ def reinitialiseBase():
 
     conn = sqlite3.connect('base_tweet.db');
     
+    #----- PARTIE UTILISATEUR -----
+
     #On supprime la table si elle existe
     cursor = conn.cursor();
     cursor.execute("""
@@ -89,10 +139,79 @@ def reinitialiseBase():
     conn.commit();
 
 
-    #Base utilisateur
+    #On affiche les utilisateurs
+    afficheUtilisateurs();
+
+
+
+
+    #----- PARTIE TWEET -----
+    
+    #On supprime la table si elle existe
+    cursor = conn.cursor();
+    cursor.execute("""
+        DROP TABLE IF EXISTS Tweet;
+        """);
+    conn.commit();
+    
+    # On crée la nouvelle
+    cursor = conn.cursor();
+    cursor.execute("""
+        CREATE TABLE Tweet(
+        id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        text varchar(120),
+        id_Utilisateur INTEGER
+        )
+        """)
+    conn.commit();
+    
+    
+    # On insert des utilisateurs
+    cursor = conn.cursor();
+    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    cursor.execute("""
+        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+    conn.commit();
+    
+    cursor = conn.cursor();
+    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    cursor.execute("""
+        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+    conn.commit();
+    
+    cursor = conn.cursor();
+    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2"}
+    cursor.execute("""
+        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+    conn.commit();
+    
+    
+    #On affiche les utilisateurs
+    afficheTweets();
+
+
+
+
+
+
+def afficheUtilisateurs():
+
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
     cursor.execute("""SELECT * FROM Utilisateur""")
-    user1 = cursor.fetchone()
-    print(user1)
+    users = cursor.fetchall();
+    print(users)
+
+
+
+
+def afficheTweets():
+    
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    cursor.execute("""SELECT * FROM Tweet""")
+    tweets = cursor.fetchall();
+    print(tweets)
 
 
 
