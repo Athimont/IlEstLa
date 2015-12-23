@@ -20,7 +20,7 @@ def trieData (conn, data) :
         pseudo = pseudo.replace(" ", "");
         
         print("On cree un nouveau compte avec comme pseudo :"+pseudo+"\n");
-        res = ("Votre compte a bien ete cree");
+        res = ("Votre compte a bien ete cree : "+pseudo+"\n");
         conn.sendall(res.encode());
         conn.close();
     
@@ -34,16 +34,14 @@ def trieData (conn, data) :
         pseudo = pseudo.replace(" ", "");
         
         print("Vous etes connecte en tant que : "+pseudo+"\n");
-        rechercheMail(mail, tableauColloque);
-
-        res = ("Vous etes bien connectes");
+        res = ("Vous etes bien connectes : "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
 
 
     else :
-        print("Commande inconnue.");
-        res = ("Commande inconnue.");
+        print("Erreur : Commande inconnue.");
+        res = ("Erreur : Commande inconnue.\n");
         conn.sendall(res.encode())
         conn.close();
 
