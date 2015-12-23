@@ -22,20 +22,21 @@ s.bind(("localhost", 50007));
 s.listen(1);
 
 #On affiche qui se connecte
-conn, addr = s.accept()
-print 'Connected by', addr;
+#conn, addr = s.accept()
+#print 'Connected by', addr;
         
 while True:
+    
     conn, addr = s.accept();
     
     #On recupere les donnees
+    print("Donnees recues par : "+addr);
     data = conn.recv(1024);
-
-    #On ferme la connexion
-    conn.close();
-
     #On trie ce qu'on a recu
     trieData(data);
+
+
+
 
         
 

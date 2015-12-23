@@ -48,10 +48,7 @@ while(actionOk == False):
     
     #On envoie l'action
     s.sendall(action.encode())
-
-    #On ferme la connexion
-    s.close()
-    
+    s.close();
 
     
     
