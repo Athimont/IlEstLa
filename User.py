@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import Tweet
 import socket
 
@@ -33,22 +36,22 @@ class User:
 
 
 
-actionOk = False;
-
-
-while(actionOk == False):
-    actionOk = True;
-    print("Que voulez-vous faire ?");
+print("Que voulez-vous faire ?");
     
-    action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
+action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
 
-    #On connecte
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", 50007))
+#On connecte
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+s.connect(("localhost", 50007));
     
-    #On envoie l'action
-    s.sendall(action.encode())
-    s.close();
+#On envoie l'action
+s.sendall(action.encode());
+    
+reponse = s.recv(1024);
+s.close();
+
+print(reponse.decode());
+    
 
     
     
