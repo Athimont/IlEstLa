@@ -45,6 +45,7 @@ class User:
 
     @staticmethod
     def utilisateurEstConnecte():
+        print(User.currentUser);
         return (not (User.currentUser==""));
 
 
@@ -78,7 +79,7 @@ def envoi(action):
     print(reponse.decode());
 
     #Si l'utilisateur est connecté, alors on affiche les autres actions
-    if("bien connectes" in reponse.decode()) :
+    if("1 :" in reponse.decode()) :
         proposeActions();
 
     else :

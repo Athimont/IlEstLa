@@ -27,7 +27,7 @@ def trieData (conn, data) :
         utilise = utilisateurExiste(pseudo);
         if(utilise) :
         
-            reponse = ("Erreur : ce pseudo est deja pris\n");
+            reponse = ("0 : Erreur : ce pseudo est deja pris\n");
 
         else :
         
@@ -37,11 +37,10 @@ def trieData (conn, data) :
             res = creerCompte(pseudo);
         
             if(res):
-                reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
+                reponse = ("0 : Votre compte a bien ete cree : "+pseudo+"\n");
         
             else :
-                reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
-
+                reponse = ("0 : Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
 
         conn.sendall(reponse.encode());
         conn.close();
@@ -64,15 +63,13 @@ def trieData (conn, data) :
         #On connecte l'utilisateur
         User.connecteUtilisateur(pseudo);
         connecte = User.utilisateurEstConnecte();
-        
         if (connecte):
             print("Vous etes connecte en tant que : "+pseudo+"\n");
-            res = ("Vous etes bien connectes : "+pseudo+"\n");
+            res = ("1 : Vous etes bien connectes : "+pseudo+"\n");
 
         else :
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
-            res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
-
+            res = ("0 : Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
 
@@ -85,7 +82,7 @@ def trieData (conn, data) :
         if ( not (User.utilisateurEstConnecte())):
             
             print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("0 : Erreur : Vous devez etre connecté pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
@@ -93,7 +90,7 @@ def trieData (conn, data) :
         User.deconnecteUtilisateur();
     
         print("Vous avez ete deconnecte\n");
-        res = ("Vous avez ete deconnecte\n");
+        res = ("0 : Vous avez ete deconnecte\n");
         conn.sendall(res.encode())
         conn.close();
 
@@ -108,7 +105,7 @@ def trieData (conn, data) :
         if ( not (User.utilisateurEstConnecte())):
             
             print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("0 : Erreur : Vous devez etre connecté pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
@@ -122,10 +119,11 @@ def trieData (conn, data) :
         id_Abonne = trouveAbonne(pseudo);
         if (id_Abonne == None):
             print("Erreur : L'utilisateur n'existe pas.");
-            res = ("Erreur : L'utilisateur n'existe pas.\n");
+            res = ("1 : Erreur : L'utilisateur n'existe pas.\n");
         else:
             print("Vous vous etes abonne a l'utilisateur : "+pseudo+"\n");
-            res = ("Vous vous etes abonne a l'utilisateur "+pseudo+"\n");
+            res = ("1 : Vous vous etes abonne a l'utilisateur "+pseudo+"\n");
+
         conn.sendall(res.encode())
         conn.close();
 
@@ -158,7 +156,7 @@ def creerCompte(pseudo):
 def abonne (id_abonne):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
-    data1 = {"pseudo" : currentUser}
+    data1 = {"pseudo" : User.currentUser}
     cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data1)
     users = cursor.fetchall();
     id_user = users[0];
