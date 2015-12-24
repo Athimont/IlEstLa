@@ -6,8 +6,9 @@ import sqlite3
 
 
 # ----- Centrale ----
-
-currentUser ="";
+def init (pseudo):
+    global currentUser;
+    currentUser = pseudo;
 
 
 def trieData (conn, data) :
@@ -63,17 +64,35 @@ def trieData (conn, data) :
 	if (existe):
             print("Vous etes connecte en tant que : "+pseudo+"\n");
             res = ("Vous etes bien connectes : "+pseudo+"\n");
-            currentUser = pseudo;
+            init(pseudo);
         else :
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
             res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
+            init("");
         conn.sendall(res.encode())
         conn.close();
 
     elif ( "disconnect -p" in action):
         print("Vous avez ete deconnecte\n");
         res = ("Vous avez ete deconnecte\n");
-        currentUser = "";
+        init("");
+        conn.sendall(res.encode())
+        conn.close();
+
+    elif ("abonnement -p" in action):
+        #On supprime l'action
+        pseudo = action.replace("abonnement -p", "");
+        
+        #On supprime d'éventuels espaces
+        pseudo = pseudo.replace(" ", "");
+
+        id_Abonne = trouveAbonne(pseudo);
+        if (id_Abonne == None):
+            print("Erreur : L'utilisateur n'existe pas.");
+            res = ("Erreur : L'utilisateur n'existe pas.\n");
+        else:
+            print("Vous vous etes abonne a l'utilisateur : "+pseudo+"\n");
+            res = ("Vous vous etes abonne a l'utilisateur et bien "Vous etes bien connectes : "+pseudo+"\n" : "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
 
@@ -100,9 +119,37 @@ def creerCompte(pseudo):
     return utilisateurExiste(pseudo);
 
 
+def abonne (id_abonne):
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    data1 = {"pseudo" : currentUser}
+    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data1)
+    users = cursor.fetchall();
+    id_user = users[0];
+    id_user = id_user[0];
+    id_abonne = id_abonne[0];
+    print(id_user);
+    data2 = {"id_abonne" : id_abonne, "id_user" : id_user}
+    cursor.execute("""
+        INSERT INTO adonne(id_Abonne, id_Utilisateur) VALUES(:id_abonne, :id_user)""", data2)
+    conn.commit();
+    
 
 
+def trouveAbonne(pseudo):
+    
+    conn = sqlite3.connect('base_tweet.db');
 
+    cursor = conn.cursor();
+    data = {"pseudo" : pseudo}
+    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data)
+    users = cursor.fetchall();
+    if (len(users) > 0) :
+        abonne (users[0]);
+        return users[0];
+    else:
+        return None;
+        
 
 
 
