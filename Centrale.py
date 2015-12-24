@@ -3,15 +3,14 @@
 
 import socket
 import sqlite3
-
+from User import User
 
 # ----- Centrale ----
-def init (pseudo):
-    global currentUser;
-    currentUser = pseudo;
+
 
 
 def trieData (conn, data) :
+
     action = data.decode();
     print(action);
 
@@ -50,7 +49,10 @@ def trieData (conn, data) :
         afficheUtilisateurs();
     
 
+
+
     elif ("tweet -p" in action) :
+
         actionOk = True;
         
         #On supprime l'action
@@ -59,27 +61,58 @@ def trieData (conn, data) :
         #On supprime d'éventuels espaces
         pseudo = pseudo.replace(" ", "");
         
-	#On vérifie l'existance de l'utilisateur
-	existe = utilisateurExiste(pseudo);
-	if (existe):
+        #On connecte l'utilisateur
+        User.connecteUtilisateur(pseudo);
+        connecte = User.utilisateurEstConnecte();
+        
+        if (connecte):
             print("Vous etes connecte en tant que : "+pseudo+"\n");
             res = ("Vous etes bien connectes : "+pseudo+"\n");
-            init(pseudo);
+
         else :
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
             res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
-            init("");
+
         conn.sendall(res.encode())
         conn.close();
 
-    elif ( "disconnect -p" in action):
+
+
+
+    elif ( "disconnect -p" in action) :
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( not (User.utilisateurEstConnecte())):
+            
+            print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            conn.close();
+            return False;
+        
+        User.deconnecteUtilisateur();
+    
         print("Vous avez ete deconnecte\n");
         res = ("Vous avez ete deconnecte\n");
-        init("");
         conn.sendall(res.encode())
         conn.close();
 
-    elif ("abonnement -p" in action):
+
+
+
+
+
+    elif ("abonnement -p" in action) :
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( not (User.utilisateurEstConnecte())):
+            
+            print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            conn.close();
+            return False;
+        
         #On supprime l'action
         pseudo = action.replace("abonnement -p", "");
         
@@ -92,9 +125,12 @@ def trieData (conn, data) :
             res = ("Erreur : L'utilisateur n'existe pas.\n");
         else:
             print("Vous vous etes abonne a l'utilisateur : "+pseudo+"\n");
-            res = ("Vous vous etes abonne a l'utilisateur et bien "Vous etes bien connectes : "+pseudo+"\n" : "+pseudo+"\n");
+            res = ("Vous vous etes abonne a l'utilisateur "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
+
+
+
 
     else :
         print("Erreur : Commande inconnue.");
@@ -259,6 +295,31 @@ def reinitialiseBase():
     
     #On affiche les utilisateurs
     afficheTweets();
+
+
+
+
+    #----- PARTIE ABONNEMENT -----
+
+    #On supprime la table si elle existe
+    cursor = conn.cursor();
+    cursor.execute("""
+        DROP TABLE IF EXISTS Abonnement;
+        """);
+    conn.commit();
+    
+    # On crée la nouvelle
+    cursor = conn.cursor();
+    cursor.execute("""
+        CREATE TABLE Abonnement(
+        id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        id_Abonne INTEGER,
+        id_Utilisateur INTEGER
+        )
+        """)
+    conn.commit();
+    
+    
 
 
 

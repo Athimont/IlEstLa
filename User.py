@@ -5,18 +5,23 @@ import Tweet
 import socket
 
 
+
+
 class User:
-	""" Classe définisant un utilisateur caractérisé par:
-	- son Identifiant
+
+    currentUser = ""
+
+    """ Classe définisant un utilisateur caractérisé par:
+        - son Identifiant
 	- son Mot de passe
 	- son Nom
 	- son prénom"""
     
-	def __init__(self,identifiant,password,nom,prenom):
-		self.id = identifiant
-		self.password = password
-		self.nom = nom
-		self.prenom = prenom
+    def __init__(self,identifiant,password,nom,prenom):
+        self.id = identifiant
+        self.password = password
+        self.nom = nom
+        self.prenom = prenom
 
 	#def publie (text):
 		
@@ -32,6 +37,26 @@ class User:
 
 	#def deconnecte ():
 
+
+    @staticmethod
+    def metUtilisateurCourant(pseudo):
+        User.currentUser = pseudo;
+
+
+    @staticmethod
+    def utilisateurEstConnecte():
+        return (not (User.currentUser==""));
+
+
+
+    @staticmethod
+    def connecteUtilisateur(pseudo):
+        User.currentUser = pseudo;
+
+
+    @staticmethod
+    def deconnecteUtilisateur():
+        User.currentUser = "";
 
 
 
@@ -65,7 +90,7 @@ def proposeActions():
 
     print("Que voulez-vous faire ?");
 
-    action = input("1- twitter : tweet –p <message> \n2- Vous abonnez : abonnement -p <abonnement> \n3- Vous déconnectez: disconnect -p <>\n");
+    action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <abonnement> \n3- Vous déconnectez: disconnect -p <>\n");
 
     envoi(action);
 
@@ -80,6 +105,14 @@ def actionsDebut():
     envoi(action);
 
 
-actionsDebut();
-    
+def main():
+    pass
+
+if __name__ == "__main__":
+
+    actionsDebut();
+
+    main()
+
+
     
