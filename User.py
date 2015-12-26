@@ -23,6 +23,19 @@ class User:
         self.nom = nom
         self.prenom = prenom
 
+	#def publie (text):
+		
+	#def abonne (user):
+
+	#def desabonne (user):	
+
+	#def affichecompte ():
+
+	#def afficheabonnement ():
+
+	#def connecte ():
+
+	#def deconnecte ():
 
 
     @staticmethod
@@ -89,7 +102,7 @@ def proposeActions():
 
     print("Que voulez-vous faire ?");
 
-    action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <utilisateur>\n3- Vous desabonnez : desabonnement -p <utilisateur> \n4- Vous déconnectez: disconnect -p <>\n");
+    action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <utilisateur>\n3- Vous desabonnez : desabonnement -p <utilisateur> \n4- Vous déconnectez: disconnect -p <>\n5- Actualiser la file d'actualite: actu\n");
 
     envoi(User.currentUser+" : "+action);
 

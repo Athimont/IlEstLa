@@ -236,7 +236,7 @@ def trieData (conn, data) :
     elif ("tweet -m" in action) :
         
         
-        # On vérifie que l'utilisateur est bien connecte
+        # On verifie que l'utilisateur est bien connecte
         if ( pseudoUtilisateur == ""):
             
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
@@ -271,7 +271,24 @@ def trieData (conn, data) :
 
         afficheTweets();
 
+    elif("actu" in action) :
 
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
+            
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            conn.close();
+            return False;
+
+    
+        actionOk = True;
+        res = afficheActu(pseudoUtilisateur);
+        
+        conn.sendall(res.encode())
+        conn.close();
 
 
     else :
@@ -303,6 +320,7 @@ def abonne (abonne, utilisateurSuivi):
     cursor = conn.cursor();
 
     id_abonne = getIdDeUtilisateur(abonne);
+    utilisateurSuivi = getIdDeUtilisateur(utilisateurSuivi);
 
     data = {"id_abonne" : id_abonne, "id_user" : utilisateurSuivi}
     cursor.execute("""
@@ -370,8 +388,7 @@ def tweet(pseudo, message):
     id_Utilisateur = getIdDeUtilisateur(pseudo);
     
     cursor = conn.cursor();
-    maintenant = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
-    data = {"id_Utilisateur" : id_Utilisateur , "message" : message , "date_Publication": maintenant}
+    data = {"id_Utilisateur" : id_Utilisateur , "message" : message}
     cursor.execute("""
         INSERT INTO Tweet(id_Utilisateur, text) VALUES(:id_Utilisateur, :message)""", data)
 
@@ -476,29 +493,27 @@ def reinitialiseBase():
         CREATE TABLE Tweet(
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         text varchar(120),
-        id_Utilisateur INTEGER,
-        date_Publication datetime
+        id_Utilisateur INTEGER
         )
         """)
     conn.commit();
-
-    maintenant = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
-
+    
+    
     # On insert des utilisateurs
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1", "date_Publication" : maintenant}
+    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1" , "date_Publication" : maintenant}
+    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2" , "date_Publication" : maintenant}
+    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2"}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
@@ -566,20 +581,21 @@ def afficheAbonnements():
     print(abonnements)
 
 
-
-
-def afficheActu():
+def afficheActu(pseudo):
 
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
     # changer utilisateur2 par l'id de l'utilisateur courrant
-    data = {"id_currentUser" : "utilisateur2"}
-    cursor.execute("""SELECT id_Abonne FROM Abonnement WHERE id_Utilisateur = :id_currentUser""",data);
+    data = {"id_currentUser" : getIdDeUtilisateur(pseudo)}
+    cursor.execute("""SELECT id_Utilisateur FROM Abonnement WHERE id_Abonne = :id_currentUser""",data);
     abonnes = cursor.fetchall();
     listeTweet =[];
     for abo in abonnes:
         listeTweet.append(chercheTweet(abo[0]));
-    return listeTweet;
+    strliste = "\n";
+    for tweet in listeTweet :
+        strliste = strliste + tweet + "\n";
+    return strliste;
 
 
 def chercheTweet(id_Abonne):
@@ -599,16 +615,18 @@ def lePlusRecent(liste_Tweets):
     for t in liste_Tweets:
         dateT = traitementDate(t[3]);
         if tweet == None or dateT < dateCurrent:
-            tweet = t;
+            tweet = t[1];
             dateCurrent = dateT;
-    return tweet[1];
+    if tweet == None:
+        tweet = "Les utilisateurs pour lesquels vous etes abonne n'ont rien tweeter";
+    return tweet;
 
 
 def traitementDate(date):
     dateHeure = date.split(" ");
     dateSplit = dateHeure[0].split("-");
     heureSplit = dateHeure[1].split(":");
-    date = datetime.datetime(dateSplit[2],dateSplit[1],dateSplit[0],heureSplit[0],heureSplit[1],heureSplit[2]);
+    date = datetime.datetime(int(dateSplit[2]),int(dateSplit[1]),int(dateSplit[0]),int(heureSplit[0]),int(heureSplit[1]),int(heureSplit[2]));
     return date
 
 
