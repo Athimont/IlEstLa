@@ -370,7 +370,8 @@ def tweet(pseudo, message):
     id_Utilisateur = getIdDeUtilisateur(pseudo);
     
     cursor = conn.cursor();
-    data = {"id_Utilisateur" : id_Utilisateur , "message" : message}
+    maintenant = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
+    data = {"id_Utilisateur" : id_Utilisateur , "message" : message , "date_Publication": maintenant}
     cursor.execute("""
         INSERT INTO Tweet(id_Utilisateur, text) VALUES(:id_Utilisateur, :message)""", data)
 
@@ -475,27 +476,29 @@ def reinitialiseBase():
         CREATE TABLE Tweet(
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         text varchar(120),
-        id_Utilisateur INTEGER
+        id_Utilisateur INTEGER,
+        date_Publication datetime
         )
         """)
     conn.commit();
-    
-    
+
+    maintenant = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
+
     # On insert des utilisateurs
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1", "date_Publication" : maintenant}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1" , "date_Publication" : maintenant}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2"}
+    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2" , "date_Publication" : maintenant}
     cursor.execute("""
         INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
     conn.commit();
@@ -561,6 +564,8 @@ def afficheAbonnements():
     cursor.execute("""SELECT * FROM Abonnement""")
     abonnements = cursor.fetchall();
     print(abonnements)
+
+
 
 
 def afficheActu():

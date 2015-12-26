@@ -23,19 +23,6 @@ class User:
         self.nom = nom
         self.prenom = prenom
 
-	#def publie (text):
-		
-	#def abonne (user):
-
-	#def desabonne (user):	
-
-	#def affichecompte ():
-
-	#def afficheabonnement ():
-
-	#def connecte ():
-
-	#def deconnecte ():
 
 
     @staticmethod
