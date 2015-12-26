@@ -102,7 +102,7 @@ def proposeActions():
 
     print("Que voulez-vous faire ?");
 
-    action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <abonnement> \n3- Vous déconnectez: disconnect -p <>\n");
+    action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <utilisateur>\n3- Vous desabonnez : desabonnement -p <utilisateur> \n4- Vous déconnectez: disconnect -p <>\n");
 
     envoi(User.currentUser+" : "+action);
 

@@ -108,6 +108,66 @@ def trieData (conn, data) :
 
 
 
+    elif ("desabonnement -p" in action) :
+    
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
+        
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            conn.close();
+            return False;
+        
+        
+        
+        #On supprime l'action
+        utilisateurSuivi = action.replace("desabonnement -p", "");
+        print("e : "+utilisateurSuivi);
+        #On supprime d'éventuels espaces
+        utilisateurSuivi = utilisateurSuivi.replace(" ", "");
+        
+        # On s'assure que l'utilisateur à suivre existe bien
+        suiviExiste = utilisateurExiste(utilisateurSuivi);
+        
+        if (not suiviExiste):
+            print("Erreur : L'utilisateur n'existe pas.");
+            res = ("Erreur : L'utilisateur n'existe pas.\n");
+    
+        else:
+            
+            #On regarde si l'utilisateur est déjà abonné
+            dejaAbonne = abonnementExiste(pseudoUtilisateur, utilisateurSuivi);
+            
+            if (not dejaAbonne) :
+                
+                print("Vous devez être abonne a l'utilisateur pour vous desabonner\n");
+                res = ("Vous devez être abonne a l'utilisateur pour vous desabonner\n");
+        
+            else :
+                
+                #On desabonne l'utilisateur
+                bienDesabonne = desabonne(pseudoUtilisateur, utilisateurSuivi);
+                
+                if (bienDesabonne) :
+                    
+                    print("Vous n'etes plus abonne a l'utilisateur : "+utilisateurSuivi+"\n");
+                    res = ("Vous n'etes plus abonne a l'utilisateur : "+utilisateurSuivi+"\n");
+                
+                else :
+                    
+                    print("Erreur : une erreur s'est produite lors de votre desabonnement\n");
+                    res = ("Erreur : une erreur s'est produite lors de votre desabonnement\n");
+
+
+        conn.sendall(res.encode())
+        conn.close();
+        
+        afficheAbonnements();
+    
+    
+
+
 
 
 
@@ -167,6 +227,7 @@ def trieData (conn, data) :
         conn.close();
 
         afficheAbonnements();
+
 
 
 
@@ -248,7 +309,23 @@ def abonne (abonne, utilisateurSuivi):
     conn.commit();
 
     return abonnementExiste(abonne, utilisateurSuivi);
+
+
+
+def desabonne (abonne, utilisateurSuivi):
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
     
+    id_abonne = getIdDeUtilisateur(abonne);
+    
+    data = {"id_abonne" : id_abonne, "id_user" : utilisateurSuivi}
+    cursor.execute("""
+        DELETE FROM Abonnement where id_Abonne = :id_abonne and id_Utilisateur = :id_user""", data)
+    conn.commit();
+    
+    return not abonnementExiste(abonne, utilisateurSuivi);
+
+
 
 
 def abonnementExiste(abonne, utilisateurSuivi):
