@@ -88,6 +88,7 @@ def trieData (conn, data) :
 
 
 
+
     elif ( "disconnect -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -139,15 +140,64 @@ def trieData (conn, data) :
 
         else:
             
-            #On abonne l'utilisateur
-            abonne(pseudoUtilisateur, utilisateurSuivi);
+            #On regarde si l'utilisateur est déjà abonné
+            dejaAbonne = abonnementExiste(pseudoUtilisateur, utilisateurSuivi);
             
+            if (dejaAbonne) :
+
+                print("Vous vous etes deja abonne a l'utilisateur : "+utilisateurSuivi+"\n");
+                res = ("Vous vous etes deja abonne a l'utilisateur "+utilisateurSuivi+"\n");
             
-            print("Vous vous etes abonne a l'utilisateur : "+utilisateurSuivi+"\n");
-            res = ("Vous vous etes abonne a l'utilisateur "+utilisateurSuivi+"\n");
+            else :
+
+                #On abonne l'utilisateur
+                bienAbonne = abonne(pseudoUtilisateur, utilisateurSuivi);
+            
+                if (bienAbonne) :
+            
+                    print("Vous vous etes abonne a l'utilisateur : "+utilisateurSuivi+"\n");
+                    res = ("Vous vous etes abonne a l'utilisateur "+utilisateurSuivi+"\n");
+
+                else :
+                
+                    print("Erreur : une erreur s'est produite lors de votre abonnement\n");
+                    res = ("Erreur : une erreur s'est produite lors de votre abonnement\n");
+                        
 
         conn.sendall(res.encode())
         conn.close();
+
+        afficheAbonnements();
+
+
+
+
+    elif ("tweet -m" in action) :
+    
+        actionOk = True;
+        
+        #On supprime l'action
+        message = action.replace("tweet -m", "");
+        
+        #On supprime d'éventuels espaces
+        message = message.replace(" ", "");
+        
+        #On test que l'utilisateur existe bien
+        tweetEnregistre = tweet(pseudoUtilisateur, message);
+        
+        
+        if (tweetEnregistre):
+            print("Votre tweet a bien été enregistré\n");
+            res = ("Votre tweet a bien été enregistré\n");
+
+        else :
+            print("Erreur : Une erreur s'est produite lors de votre tweet\n");
+            res = ("Erreur : Une erreur s'est produite lors de votre tweet\n");
+
+        conn.sendall(res.encode())
+        conn.close();
+
+        afficheTweets();
 
 
 
@@ -175,38 +225,38 @@ def creerCompte(pseudo):
     return utilisateurExiste(pseudo);
 
 
+
 def abonne (abonne, utilisateurSuivi):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
-    data1 = {"pseudo" : abonne}
 
+    id_abonne = getIdDeUtilisateur(abonne);
 
-    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data1)
-    users = cursor.fetchall();
-    abonne = users[0];
-    abonne = abonne[0];
-
-    data2 = {"id_abonne" : abonne, "id_user" : utilisateurSuivi}
+    data = {"id_abonne" : id_abonne, "id_user" : utilisateurSuivi}
     cursor.execute("""
-        INSERT INTO adonne(id_Abonne, id_Utilisateur) VALUES(:id_abonne, :id_user)""", data2)
+        INSERT INTO Abonnement(id_Abonne, id_Utilisateur) VALUES(:id_abonne, :id_user)""", data)
     conn.commit();
+
+    return abonnementExiste(abonne, utilisateurSuivi);
     
 
 
-#def trouveAbonne(pseudo):
-#    
-#    conn = sqlite3.connect('base_tweet.db');
-#
-#    cursor = conn.cursor();
-#    data = {"pseudo" : pseudo}
-#    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data)
-#    users = cursor.fetchall();
-#    if (len(users) > 0) :
-#        abonne (users[0]);
-#        return users[0];
-#    else:
-#        return False;
-#        
+def abonnementExiste(abonne, utilisateurSuivi):
+    
+    conn = sqlite3.connect('base_tweet.db');
+
+    id_abonne = getIdDeUtilisateur(abonne);
+
+    cursor = conn.cursor();
+    data = {"id_Abonne" : id_abonne , "id_Utilisateur" : utilisateurSuivi}
+    cursor.execute("""SELECT * FROM Abonnement where id_Abonne = :id_Abonne and id_Utilisateur=:id_Utilisateur""", data)
+    abonnement = cursor.fetchall();
+    
+    if (len(abonnement) > 0) :
+        return True;
+    else :
+        return False;
+        
 
 
 
@@ -223,6 +273,56 @@ def utilisateurExiste(pseudo):
     else :
         return False
 
+
+
+def tweet(pseudo, message):
+    
+    conn = sqlite3.connect('base_tweet.db');
+    
+    id_Utilisateur = getIdDeUtilisateur(pseudo);
+    
+    cursor = conn.cursor();
+    data = {"id_Utilisateur" : id_Utilisateur , "message" : message}
+    cursor.execute("""
+        INSERT INTO Tweet(id_Utilisateur, text) VALUES(:id_Utilisateur, :message)""", data)
+
+    conn.commit();
+    
+    return tweetExiste(pseudo, message);
+
+
+
+
+def tweetExiste(pseudo, message):
+    
+    conn = sqlite3.connect('base_tweet.db');
+    
+    id_Utilisateur = getIdDeUtilisateur(pseudo);
+    
+    cursor = conn.cursor();
+    data = {"id_Utilisateur" : id_Utilisateur , "message" : message}
+    cursor.execute("""SELECT * FROM Tweet where id_Utilisateur= :id_Utilisateur and text= :message""", data)
+    
+    tweet = cursor.fetchall();
+
+    if (len(tweet) > 0) :
+        return True
+    else :
+        return False
+
+
+
+
+def getIdDeUtilisateur(pseudo) :
+
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    data = {"pseudo" : pseudo}
+    
+    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data)
+    users = cursor.fetchall();
+    abonne = users[0];
+    return abonne[0];
 
 
 
