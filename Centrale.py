@@ -94,16 +94,15 @@ def trieData (conn, data) :
         # On vérifie que l'utilisateur est bien connecte
         if ( pseudoUtilisateur == ""):
             
-            print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
         
-        User.deconnecteUtilisateur();
     
         print("Vous avez ete deconnecte\n");
-        res = ("0 : Vous avez ete deconnecte\n");
+        res = ("Vous avez ete deconnecte\n");
         conn.sendall(res.encode())
         conn.close();
 
@@ -117,8 +116,8 @@ def trieData (conn, data) :
         # On vérifie que l'utilisateur est bien connecte
         if ( pseudoUtilisateur == ""):
             
-            print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
@@ -173,6 +172,17 @@ def trieData (conn, data) :
 
 
     elif ("tweet -m" in action) :
+        
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
+            
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            conn.close();
+            return False;
+
     
         actionOk = True;
         
@@ -187,8 +197,8 @@ def trieData (conn, data) :
         
         
         if (tweetEnregistre):
-            print("Votre tweet a bien été enregistré\n");
-            res = ("Votre tweet a bien été enregistré\n");
+            print("Votre tweet a bien été enregistre\n");
+            res = ("Votre tweet a bien été enregistre\n");
 
         else :
             print("Erreur : Une erreur s'est produite lors de votre tweet\n");

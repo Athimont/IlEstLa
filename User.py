@@ -85,6 +85,9 @@ def envoi(action):
         pseudo = pseudo.replace("\n", "");
         User.metUtilisateurCourant(pseudo);
     
+    elif("Vous avez ete deconnecte" in reponse.decode()) :
+    
+        User.deconnecteUtilisateur();
 
     #Si l'utilisateur est connecté, alors on affiche les autres actions
     if(User.utilisateurEstConnecte()) :
