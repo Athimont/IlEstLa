@@ -4,7 +4,10 @@
 import socket
 import sqlite3
 import datetime
+import json
+
 from User import User
+from Tweet import Tweet
 
 # ----- Centrale ----
 
@@ -271,6 +274,9 @@ def trieData (conn, data) :
 
         afficheTweets();
 
+
+
+
     elif("actu" in action) :
 
         
@@ -286,8 +292,10 @@ def trieData (conn, data) :
     
         actionOk = True;
         res = afficheActu(pseudoUtilisateur);
-        
-        conn.sendall(res.encode())
+
+        resEncode = json.dumps(res);
+    
+        conn.sendall(resEncode)
         conn.close();
 
 
@@ -584,6 +592,7 @@ def afficheAbonnements():
     print(abonnements)
 
 
+
 def afficheActu(pseudo):
 
     conn = sqlite3.connect('base_tweet.db');
@@ -592,37 +601,44 @@ def afficheActu(pseudo):
     data = {"id_currentUser" : getIdDeUtilisateur(pseudo)}
     cursor.execute("""SELECT id_Utilisateur FROM Abonnement WHERE id_Abonne = :id_currentUser""",data);
     abonnes = cursor.fetchall();
+    print(abonnes);
     listeTweet =[];
     for abo in abonnes:
-        listeTweet.append(chercheTweet(abo[0]));
-    strliste = "\n";
-    for tweet in listeTweet :
-        strliste = strliste + tweet + "\n";
-    return strliste;
+        tweets = chercheTweet(abo[0]);
+        
+        for tweet in tweets:
+            listeTweet.append(tweet);
+
+    return listeTweet;
 
 
-def chercheTweet(id_Abonne):
+
+
+def chercheTweet(id_Utilisateur):
     
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
-    data = {"id_Abonne" : id_Abonne};
-    cursor.execute("""SELECT * FROM Tweet WHERE id_Utilisateur = :id_Abonne""",data);
+    data = {"id_Utilisateur" : id_Utilisateur};
+    cursor.execute("""SELECT * FROM Tweet WHERE id_Utilisateur = :id_Utilisateur""",data);
     tweets = cursor.fetchall();
-    return lePlusRecent(tweets);
+
+    return tweets;
 
 
-def lePlusRecent(liste_Tweets):
-    tweet = None;
-    dateCurrent =None;
-    #datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    for t in liste_Tweets:
-        dateT = traitementDate(t[3]);
-        if tweet == None or dateT < dateCurrent:
-            tweet = t[1];
-            dateCurrent = dateT;
-    if tweet == None:
-        tweet = "Les utilisateurs pour lesquels vous etes abonne n'ont rien tweeter";
-    return tweet;
+
+
+#def lePlusRecent(liste_Tweets):
+#    tweet = None;
+#    dateCurrent =None;
+#    #datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#    for t in liste_Tweets:
+#        dateT = traitementDate(t[3]);
+#        if tweet == None or dateT < dateCurrent:
+#            tweet = t[1];
+#            dateCurrent = dateT;
+#    if tweet == None:
+#        tweet = "Les utilisateurs pour lesquels vous etes abonne n'ont rien tweeter";
+#    return tweet;
 
 
 def traitementDate(date):

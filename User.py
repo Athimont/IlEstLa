@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import Tweet
 import socket
+import json
 
 
 
@@ -61,6 +61,14 @@ class User:
 
 
 def envoi(action):
+    
+    actu = False;
+    
+    #si l'action est actualiser
+    if ("actu" in action) :
+        actu = True;
+    
+    
     #On connecte
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
     s.connect(("localhost", 50007));
@@ -70,26 +78,36 @@ def envoi(action):
     
     #On récupère la réponse de centrale
     reponse = s.recv(1024);
-    
-    #on ferme la connection
-    #s.close();
 
-    # On affiche la réponse
-    print(reponse.decode());
-    
-    #On detecte si l'utilisateur vient de se connecter
-    if("Vous etes bien connectes" in reponse.decode()) :
-    
-        #On récupère le pseudo de l'utilisateur
-        pseudo = reponse.decode().split(":")[1];
-        pseudo = pseudo.replace("\n", "");
-        User.metUtilisateurCourant(pseudo);
-    
-    elif("Vous avez ete deconnecte" in reponse.decode()) :
-    
-        User.deconnecteUtilisateur();
+    if(actu):
 
-    #Si l'utilisateur est connecté, alors on affiche les autres actions
+
+        # On récupère les tweets
+        tweets = json.loads(reponse);
+
+        for tweet in tweets :
+            print(tweet);
+
+    
+    else :
+        # On affiche la réponse
+        print(reponse.decode());
+    
+        #On detecte si l'utilisateur vient de se connecter
+        if("Vous etes bien connectes" in reponse.decode()) :
+    
+            #On récupère le pseudo de l'utilisateur
+            pseudo = reponse.decode().split(":")[1];
+            pseudo = pseudo.replace("\n", "");
+            User.metUtilisateurCourant(pseudo);
+    
+        elif("Vous avez ete deconnecte" in reponse.decode()) :
+    
+            User.deconnecteUtilisateur();
+
+        #Si l'utilisateur est connecté, alors on affiche les autres actions
+
+
     if(User.utilisateurEstConnecte()) :
         proposeActions();
 

@@ -1,9 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 class Tweet:
-	""" Classe qui defini un tweet par :
-	- son texte
-	- sa date de publication"""
-
-	def __init__(self, texte, date):
-		self.text = texte
-		self.date = date
-
+    
+    
+    """ Classe définisant un utilisateur caractérisé par:
+        - son Identifiant
+        - son Mot de passe
+        - son Nom
+        - son prénom"""
+    
+    def __init__(self,text,date,pseudo):
+        self.text = text
+        self.date = date
+        self.pseudo = pseudo
