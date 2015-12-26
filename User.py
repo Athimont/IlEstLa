@@ -9,7 +9,7 @@ import socket
 
 class User:
 
-    currentUser = ""
+    currentUser = "";
 
     """ Classe définisant un utilisateur caractérisé par:
         - son Identifiant
@@ -45,7 +45,6 @@ class User:
 
     @staticmethod
     def utilisateurEstConnecte():
-        print(User.currentUser);
         return (not (User.currentUser==""));
 
 
@@ -77,9 +76,18 @@ def envoi(action):
 
     # On affiche la réponse
     print(reponse.decode());
+    
+    #On detecte si l'utilisateur vient de se connecter
+    if("Vous etes bien connectes" in reponse.decode()) :
+    
+        #On récupère le pseudo de l'utilisateur
+        pseudo = reponse.decode().split(":")[1];
+        pseudo = pseudo.replace("\n", "");
+        User.metUtilisateurCourant(pseudo);
+    
 
     #Si l'utilisateur est connecté, alors on affiche les autres actions
-    if("1 :" in reponse.decode()) :
+    if(User.utilisateurEstConnecte()) :
         proposeActions();
 
     else :
@@ -93,7 +101,7 @@ def proposeActions():
 
     action = input("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <abonnement> \n3- Vous déconnectez: disconnect -p <>\n");
 
-    envoi(action);
+    envoi(User.currentUser+" : "+action);
 
 
 
@@ -103,7 +111,7 @@ def actionsDebut():
     
     action = input("1- Nouvelle inscription : comptetw –p <pseudo> \n2- Vous connecter : tweet -p <pseudo> \n");
 
-    envoi(action);
+    envoi(User.currentUser+" : "+action);
 
 
 def main():

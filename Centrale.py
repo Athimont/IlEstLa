@@ -11,7 +11,18 @@ from User import User
 
 def trieData (conn, data) :
 
-    action = data.decode();
+    # On récupère l'action
+    actionBrut = data.decode();
+    
+    print(actionBrut);
+    
+    # On sépare l'action du pseudo de l'utilisateur
+    pseudoUtilisateur = actionBrut.split(":")[0];
+    pseudoUtilisateur = pseudoUtilisateur.replace(" ", "");
+    
+    #On récupère l'action
+    action = actionBrut.split(":")[1];
+    
     print(action);
 
     if ("comptetw -p" in action) :
@@ -27,7 +38,7 @@ def trieData (conn, data) :
         utilise = utilisateurExiste(pseudo);
         if(utilise) :
         
-            reponse = ("0 : Erreur : ce pseudo est deja pris\n");
+            reponse = ("Erreur : ce pseudo est deja pris\n");
 
         else :
         
@@ -37,10 +48,10 @@ def trieData (conn, data) :
             res = creerCompte(pseudo);
         
             if(res):
-                reponse = ("0 : Votre compte a bien ete cree : "+pseudo+"\n");
+                reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
         
             else :
-                reponse = ("0 : Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
+                reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
 
         conn.sendall(reponse.encode());
         conn.close();
@@ -60,16 +71,17 @@ def trieData (conn, data) :
         #On supprime d'éventuels espaces
         pseudo = pseudo.replace(" ", "");
         
-        #On connecte l'utilisateur
-        User.connecteUtilisateur(pseudo);
-        connecte = User.utilisateurEstConnecte();
+        #On test que l'utilisateur existe bien
+        connecte = utilisateurExiste(pseudo);
+        
+        
         if (connecte):
             print("Vous etes connecte en tant que : "+pseudo+"\n");
-            res = ("1 : Vous etes bien connectes : "+pseudo+"\n");
+            res = ("Vous etes bien connectes : "+pseudo+"\n");
 
         else :
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
-            res = ("0 : Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
+            res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
         conn.sendall(res.encode())
         conn.close();
 
@@ -79,10 +91,10 @@ def trieData (conn, data) :
     elif ( "disconnect -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
-        if ( not (User.utilisateurEstConnecte())):
+        if ( pseudoUtilisateur == ""):
             
             print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("0 : Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
@@ -102,27 +114,37 @@ def trieData (conn, data) :
     elif ("abonnement -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
-        if ( not (User.utilisateurEstConnecte())):
+        if ( pseudoUtilisateur == ""):
             
             print("Erreur : Vous devez etre connecté pour effectuer cette action\n");
-            res = ("0 : Erreur : Vous devez etre connecté pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecté pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
-        
+
+
+
         #On supprime l'action
-        pseudo = action.replace("abonnement -p", "");
+        utilisateurSuivi = action.replace("abonnement -p", "");
         
         #On supprime d'éventuels espaces
-        pseudo = pseudo.replace(" ", "");
+        utilisateurSuivi = utilisateurSuivi.replace(" ", "");
 
-        id_Abonne = trouveAbonne(pseudo);
-        if (id_Abonne == None):
+        # On s'assure que l'utilisateur à suivre existe bien
+        suiviExiste = utilisateurExiste(utilisateurSuivi);
+
+        if (not suiviExiste):
             print("Erreur : L'utilisateur n'existe pas.");
-            res = ("1 : Erreur : L'utilisateur n'existe pas.\n");
+            res = ("Erreur : L'utilisateur n'existe pas.\n");
+
         else:
-            print("Vous vous etes abonne a l'utilisateur : "+pseudo+"\n");
-            res = ("1 : Vous vous etes abonne a l'utilisateur "+pseudo+"\n");
+            
+            #On abonne l'utilisateur
+            abonne(pseudoUtilisateur, utilisateurSuivi);
+            
+            
+            print("Vous vous etes abonne a l'utilisateur : "+utilisateurSuivi+"\n");
+            res = ("Vous vous etes abonne a l'utilisateur "+utilisateurSuivi+"\n");
 
         conn.sendall(res.encode())
         conn.close();
@@ -153,37 +175,38 @@ def creerCompte(pseudo):
     return utilisateurExiste(pseudo);
 
 
-def abonne (id_abonne):
+def abonne (abonne, utilisateurSuivi):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
-    data1 = {"pseudo" : User.currentUser}
+    data1 = {"pseudo" : abonne}
+
+
     cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data1)
     users = cursor.fetchall();
-    id_user = users[0];
-    id_user = id_user[0];
-    id_abonne = id_abonne[0];
-    print(id_user);
-    data2 = {"id_abonne" : id_abonne, "id_user" : id_user}
+    abonne = users[0];
+    abonne = abonne[0];
+
+    data2 = {"id_abonne" : abonne, "id_user" : utilisateurSuivi}
     cursor.execute("""
         INSERT INTO adonne(id_Abonne, id_Utilisateur) VALUES(:id_abonne, :id_user)""", data2)
     conn.commit();
     
 
 
-def trouveAbonne(pseudo):
-    
-    conn = sqlite3.connect('base_tweet.db');
-
-    cursor = conn.cursor();
-    data = {"pseudo" : pseudo}
-    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data)
-    users = cursor.fetchall();
-    if (len(users) > 0) :
-        abonne (users[0]);
-        return users[0];
-    else:
-        return None;
-        
+#def trouveAbonne(pseudo):
+#    
+#    conn = sqlite3.connect('base_tweet.db');
+#
+#    cursor = conn.cursor();
+#    data = {"pseudo" : pseudo}
+#    cursor.execute("""SELECT id FROM Utilisateur where pseudo= :pseudo""", data)
+#    users = cursor.fetchall();
+#    if (len(users) > 0) :
+#        abonne (users[0]);
+#        return users[0];
+#    else:
+#        return False;
+#        
 
 
 
@@ -195,7 +218,6 @@ def utilisateurExiste(pseudo):
     data = {"pseudo" : pseudo}
     cursor.execute("""SELECT * FROM Utilisateur where pseudo= :pseudo""", data)
     users = cursor.fetchall();
-    
     if (len(users) > 0) :
         return True
     else :
@@ -342,6 +364,16 @@ def afficheTweets():
     cursor.execute("""SELECT * FROM Tweet""")
     tweets = cursor.fetchall();
     print(tweets)
+
+
+def afficheAbonnements():
+    
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    cursor.execute("""SELECT * FROM Abonnement""")
+    abonnements = cursor.fetchall();
+    print(abonnements)
+
 
 
 
