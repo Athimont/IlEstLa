@@ -259,8 +259,8 @@ def trieData (conn, data) :
         
         
         if (tweetEnregistre):
-            print("Votre tweet a bien été enregistre\n");
-            res = ("Votre tweet a bien été enregistre\n");
+            print("Votre tweet a bien ete enregistre\n");
+            res = ("Votre tweet a bien ete enregistre\n");
 
         else :
             print("Erreur : Une erreur s'est produite lors de votre tweet\n");
@@ -493,29 +493,32 @@ def reinitialiseBase():
         CREATE TABLE Tweet(
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         text varchar(120),
-        id_Utilisateur INTEGER
+        id_Utilisateur INTEGER,
+        date_Publication datetime
         )
         """)
     conn.commit();
     
     
     # On insert des utilisateurs
+    maintenant = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    data = {"text" : "Premier tweet de l'utilisteur 1", "id_Utilisateur" : "1" , "date_Publication" : maintenant}
     cursor.execute("""
-        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+        INSERT INTO Tweet(text, id_Utilisateur, date_Publication) VALUES(:text, :id_Utilisateur, :date_Publication)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1"}
+    data = {"text" : "deuxieme tweet de l'utilisteur 1", "id_Utilisateur" : "1", "date_Publication" : maintenant}
     cursor.execute("""
-        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+        INSERT INTO Tweet(text, id_Utilisateur, date_Publication) VALUES(:text, :id_Utilisateur, :date_Publication)""", data)
     conn.commit();
     
     cursor = conn.cursor();
-    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2"}
+    data = {"text" : "Premier tweet de l'utilisteur 2", "id_Utilisateur" : "2", "date_Publication" : maintenant}
     cursor.execute("""
-        INSERT INTO Tweet(text, id_Utilisateur) VALUES(:text, :id_Utilisateur)""", data)
+        INSERT INTO Tweet(text, id_Utilisateur, date_Publication) VALUES(:text, :id_Utilisateur, :date_Publication)""", data)
     conn.commit();
     
     
