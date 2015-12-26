@@ -3,6 +3,7 @@
 
 import socket
 import sqlite3
+import datetime
 from User import User
 
 # ----- Centrale ----
@@ -562,8 +563,48 @@ def afficheAbonnements():
     print(abonnements)
 
 
+def afficheActu():
+
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    # changer utilisateur2 par l'id de l'utilisateur courrant
+    data = {"id_currentUser" : "utilisateur2"}
+    cursor.execute("""SELECT id_Abonne FROM Abonnement WHERE id_Utilisateur = :id_currentUser""",data);
+    abonnes = cursor.fetchall();
+    listeTweet =[];
+    for abo in abonnes:
+        listeTweet.append(chercheTweet(abo[0]));
+    return listeTweet;
 
 
+def chercheTweet(id_Abonne):
+    
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    data = {"id_Abonne" : id_Abonne};
+    cursor.execute("""SELECT * FROM Tweet WHERE id_Utilisateur = :id_Abonne""",data);
+    tweets = cursor.fetchall();
+    return lePlusRecent(tweets);
+
+
+def lePlusRecent(liste_Tweets):
+    tweet = None;
+    dateCurrent =None;
+    #datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    for t in liste_Tweets:
+        dateT = traitementDate(t[3]);
+        if tweet == None or dateT < dateCurrent:
+            tweet = t;
+            dateCurrent = dateT;
+    return tweet[1];
+
+
+def traitementDate(date):
+    dateHeure = date.split(" ");
+    dateSplit = dateHeure[0].split("-");
+    heureSplit = dateHeure[1].split(":");
+    date = datetime.datetime(dateSplit[2],dateSplit[1],dateSplit[0],heureSplit[0],heureSplit[1],heureSplit[2]);
+    return date
 
 
 action = input("Que voulez-vous faire ? ");
@@ -594,6 +635,8 @@ if(action == "servtw") :
 
 elif(action == "base") :
     reinitialiseBase();
+
+
 
 
 
