@@ -100,10 +100,10 @@ def traiteReponse(reponse):
 
 
 
-#Si l'utilisateur est connecté, alors on affiche les autres actions
-if(User.utilisateurEstConnecte()) :
+    #Si l'utilisateur est connecté, alors on affiche les autres actions
+    if(User.utilisateurEstConnecte()) :
     
-    proposeActions();
+        proposeActions();
     
     else :
         actionsDebut();

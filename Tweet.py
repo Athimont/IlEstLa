@@ -10,7 +10,7 @@ class Tweet:
         - son Nom
         - son prénom"""
     
-    def __init__(self,text,date,pseudo):
+    def __init__(self,text,date,id_utilisateur):
         self.text = text
         self.date = date
-        self.pseudo = pseudo
+        self.id_utilisateur = id_utilisateur

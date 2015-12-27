@@ -75,10 +75,10 @@ def trieData (addr, conn, data) :
             else :
                 reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
 
-conn.sendall(reponse.encode());
-    #conn.close();
+        conn.sendall(reponse.encode());
+        #conn.close();
     
-    afficheUtilisateurs();
+        afficheUtilisateurs();
     
     
     
@@ -118,11 +118,11 @@ conn.sendall(reponse.encode());
             print(str(dictionnaireAddrAbo));
         
         
-        else :
+        else:
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
             res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
-            conn.sendall(res.encode())
-#conn.close();
+
+        conn.sendall(res.encode())
 
 
 
@@ -130,12 +130,12 @@ conn.sendall(reponse.encode());
 
 
 
-elif ( "disconnect -p" in action) :
+    elif ( "disconnect -p" in action) :
     
-    # On vérifie que l'utilisateur est bien connecte
-    if ( pseudoUtilisateur == ""):
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
         
-        print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
             #conn.close();
@@ -145,7 +145,6 @@ elif ( "disconnect -p" in action) :
         print("Vous avez ete deconnecte\n");
         res = ("Vous avez ete deconnecte\n");
         conn.sendall(res.encode())
-    #conn.close();
 
 
 
@@ -205,11 +204,9 @@ elif ( "disconnect -p" in action) :
                     res = ("Erreur : une erreur s'est produite lors de votre desabonnement\n");
 
 
-conn.sendall(res.encode())
-    #conn.close();
+        conn.sendall(res.encode())
     
-    afficheAbonnements();
-    
+        afficheAbonnements();
     
     
     
@@ -272,10 +269,9 @@ conn.sendall(res.encode())
                     res = ("Erreur : une erreur s'est produite lors de votre abonnement\n");
 
 
-conn.sendall(res.encode())
-    #conn.close();
+        conn.sendall(res.encode())
     
-    afficheAbonnements();
+        afficheAbonnements();
     
     
     
@@ -323,17 +319,17 @@ conn.sendall(res.encode())
         
         print("On lance les avertissements");
         # On lance l'avertissement aux abonnés
-    lanceAvertissement(pseudoUtilisateur, conn);
+        lanceAvertissement(pseudoUtilisateur, conn);
 
 
 
-elif("actu" in action) :
+    elif("actu" in action) :
     
     
-    # On vérifie que l'utilisateur est bien connecte
-    if ( pseudoUtilisateur == ""):
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
         
-        print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
@@ -352,8 +348,8 @@ elif("actu" in action) :
             strTweets = strTweets+tweet.date+" : "+getPseudoPourId(tweet.id_utilisateur)+" : "+tweet.text+"\n";
 
 
-conn.sendall(strTweets.encode());
-    #conn.close();
+        conn.sendall(strTweets.encode());
+        #conn.close();
     
     
     else :
@@ -732,7 +728,7 @@ def afficheActu(pseudo):
         for tweet in tweets:
             listeTweet.append(Tweet(tweet[1],tweet[3],tweet[2]));
 
-return listeTweet;
+    return listeTweet;
 
 
 
