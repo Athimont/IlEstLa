@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import socket
+import select
+import time
+
 import sqlite3
 import datetime
 import json
@@ -11,10 +14,14 @@ from Tweet import Tweet
 
 # ----- Centrale ----
 
+dictionnaireAddrAbo = {};
+
+dictionnaireAddrConn = {};
 
 
-def trieData (conn, data) :
-
+def trieData (addr, conn, data) :
+    
+    
     # On récupère l'action
     actionBrut = data.decode();
     
@@ -28,8 +35,19 @@ def trieData (conn, data) :
     action = actionBrut.split(":")[1];
     
     print(action);
-
+    
     if ("comptetw -p" in action) :
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur != ""):
+            
+            print("Erreur : Vous devez etre deconnecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            #conn.close();
+            return False;
+    
+    
         actionOk = True;
         
         #On supprime l'action
@@ -41,32 +59,42 @@ def trieData (conn, data) :
         #On vérifie que le pseudo est libre
         utilise = utilisateurExiste(pseudo);
         if(utilise) :
-        
+            
             reponse = ("Erreur : ce pseudo est deja pris\n");
-
-        else :
         
+        else :
+            
             print("On cree un nouveau compte avec comme pseudo :"+pseudo+"\n");
-
+            
             #On cree le compte
             res = creerCompte(pseudo);
-        
+            
             if(res):
                 reponse = ("Votre compte a bien ete cree : "+pseudo+"\n");
-        
+            
             else :
                 reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
 
-        conn.sendall(reponse.encode());
-        conn.close();
-
-        afficheUtilisateurs();
+conn.sendall(reponse.encode());
+    #conn.close();
     
-
-
-
+    afficheUtilisateurs();
+    
+    
+    
+    
     elif ("tweet -p" in action) :
-
+        
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur != ""):
+            
+            print("Erreur : Vous devez etre deconnecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            #conn.close();
+            return False;
+    
+    
         actionOk = True;
         
         #On supprime l'action
@@ -82,18 +110,46 @@ def trieData (conn, data) :
         if (connecte):
             print("Vous etes connecte en tant que : "+pseudo+"\n");
             res = ("Vous etes bien connectes : "+pseudo+"\n");
-
+            
+            # On met a jour la liste des abonnement pour l'utilisateur
+            metAJourAbonnementPourPseudoEtAdresse(pseudo, addr);
+            
+            
+            print(str(dictionnaireAddrAbo));
+        
+        
         else :
             print("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
             res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
+            conn.sendall(res.encode())
+#conn.close();
+
+
+
+
+
+
+
+elif ( "disconnect -p" in action) :
+    
+    # On vérifie que l'utilisateur est bien connecte
+    if ( pseudoUtilisateur == ""):
+        
+        print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            #conn.close();
+            return False;
+        
+        
+        print("Vous avez ete deconnecte\n");
+        res = ("Vous avez ete deconnecte\n");
         conn.sendall(res.encode())
-        conn.close();
+    #conn.close();
 
 
 
-
-
-    elif ( "disconnect -p" in action) :
+    elif ("desabonnement -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
         if ( pseudoUtilisateur == ""):
@@ -101,26 +157,7 @@ def trieData (conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            conn.close();
-            return False;
-        
-    
-        print("Vous avez ete deconnecte\n");
-        res = ("Vous avez ete deconnecte\n");
-        conn.sendall(res.encode())
-        conn.close();
-
-
-
-    elif ("desabonnement -p" in action) :
-    
-        # On vérifie que l'utilisateur est bien connecte
-        if ( pseudoUtilisateur == ""):
-        
-            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
-            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
-            conn.sendall(res.encode())
-            conn.close();
+            #conn.close();
             return False;
         
         
@@ -137,7 +174,7 @@ def trieData (conn, data) :
         if (not suiviExiste):
             print("Erreur : L'utilisateur n'existe pas.");
             res = ("Erreur : L'utilisateur n'existe pas.\n");
-    
+
         else:
             
             #On regarde si l'utilisateur est déjà abonné
@@ -145,13 +182,17 @@ def trieData (conn, data) :
             
             if (not dejaAbonne) :
                 
-                print("Vous devez être abonne a l'utilisateur pour vous desabonner\n");
-                res = ("Vous devez être abonne a l'utilisateur pour vous desabonner\n");
-        
+                print("Vous devez etre abonne a l'utilisateur pour vous desabonner\n");
+                res = ("Vous devez etre abonne a l'utilisateur pour vous desabonner\n");
+
             else :
                 
                 #On desabonne l'utilisateur
                 bienDesabonne = desabonne(pseudoUtilisateur, utilisateurSuivi);
+                
+                # On met a jour la liste des abonnement pour l'utilisateur
+                metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr);
+                
                 
                 if (bienDesabonne) :
                     
@@ -164,17 +205,17 @@ def trieData (conn, data) :
                     res = ("Erreur : une erreur s'est produite lors de votre desabonnement\n");
 
 
-        conn.sendall(res.encode())
-        conn.close();
-        
-        afficheAbonnements();
+conn.sendall(res.encode())
+    #conn.close();
+    
+    afficheAbonnements();
     
     
-
-
-
-
-
+    
+    
+    
+    
+    
     elif ("abonnement -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -185,57 +226,61 @@ def trieData (conn, data) :
             conn.sendall(res.encode())
             conn.close();
             return False;
-
-
-
+    
+    
+    
         #On supprime l'action
         utilisateurSuivi = action.replace("abonnement -p", "");
         
         #On supprime d'éventuels espaces
         utilisateurSuivi = utilisateurSuivi.replace(" ", "");
-
+        
         # On s'assure que l'utilisateur à suivre existe bien
         suiviExiste = utilisateurExiste(utilisateurSuivi);
-
+        
         if (not suiviExiste):
             print("Erreur : L'utilisateur n'existe pas.");
             res = ("Erreur : L'utilisateur n'existe pas.\n");
-
+        
         else:
             
             #On regarde si l'utilisateur est déjà abonné
             dejaAbonne = abonnementExiste(pseudoUtilisateur, utilisateurSuivi);
             
             if (dejaAbonne) :
-
+                
                 print("Vous vous etes deja abonne a l'utilisateur : "+utilisateurSuivi+"\n");
                 res = ("Vous vous etes deja abonne a l'utilisateur "+utilisateurSuivi+"\n");
-            
+        
             else :
-
+                
                 #On abonne l'utilisateur
                 bienAbonne = abonne(pseudoUtilisateur, utilisateurSuivi);
-            
+                
+                # On met a jour la liste des abonnement pour l'utilisateur
+                metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr);
+                
+                
                 if (bienAbonne) :
-            
+                    
                     print("Vous vous etes abonne a l'utilisateur : "+utilisateurSuivi+"\n");
                     res = ("Vous vous etes abonne a l'utilisateur "+utilisateurSuivi+"\n");
-
+            
                 else :
-                
+                    
                     print("Erreur : une erreur s'est produite lors de votre abonnement\n");
                     res = ("Erreur : une erreur s'est produite lors de votre abonnement\n");
-                        
-
-        conn.sendall(res.encode())
-        conn.close();
-
-        afficheAbonnements();
 
 
-
-
-
+conn.sendall(res.encode())
+    #conn.close();
+    
+    afficheAbonnements();
+    
+    
+    
+    
+    
     elif ("tweet -m" in action) :
         
         
@@ -247,55 +292,70 @@ def trieData (conn, data) :
             conn.sendall(res.encode())
             conn.close();
             return False;
-
-    
+        
+        
         actionOk = True;
         
         #On supprime l'action
         message = action.replace("tweet -m", "");
         
+        #On supprime d'éventuels espaces
+        message = message.replace(" ", "");
+        
         #On test que l'utilisateur existe bien
-        tweetEnregistre = tweet(pseudoUtilisateur, message);
+        tweetEnregistre = envoieTweet(pseudoUtilisateur, message);
         
         
         if (tweetEnregistre):
             print("Votre tweet a bien ete enregistre\n");
             res = ("Votre tweet a bien ete enregistre\n");
-
+        
         else :
             print("Erreur : Une erreur s'est produite lors de votre tweet\n");
             res = ("Erreur : Une erreur s'est produite lors de votre tweet\n");
-
+    
         conn.sendall(res.encode())
-        conn.close();
-
-        afficheTweets();
-
-
-
-
-    elif("actu" in action) :
-
+        #conn.close();
         
-        # On vérifie que l'utilisateur est bien connecte
-        if ( pseudoUtilisateur == ""):
-            
-            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+        afficheTweets();
+        
+        time.sleep(0.5);
+        
+        print("On lance les avertissements");
+        # On lance l'avertissement aux abonnés
+    lanceAvertissement(pseudoUtilisateur, conn);
+
+
+
+elif("actu" in action) :
+    
+    
+    # On vérifie que l'utilisateur est bien connecte
+    if ( pseudoUtilisateur == ""):
+        
+        print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
             conn.close();
             return False;
-
+    
     
         actionOk = True;
-        res = afficheActu(pseudoUtilisateur);
+        tweets = afficheActu(pseudoUtilisateur);
+        
+        # On trie les tweets par leur date
+        tweets = sorted(tweets, key=getTweetKey, reverse=True);
+        
+        strTweets = "Mes tweets : \n"
+        
+        for tweet in tweets:
+            strTweets = strTweets+tweet.date+" : "+getPseudoPourId(tweet.id_utilisateur)+" : "+tweet.text+"\n";
 
-        resEncode = json.dumps(res);
+
+conn.sendall(strTweets.encode());
+    #conn.close();
     
-        conn.sendall(resEncode)
-        conn.close();
-
-
+    
     else :
         print("Erreur : Commande inconnue.");
         res = ("Erreur : Commande inconnue.\n");
@@ -307,7 +367,7 @@ def trieData (conn, data) :
 
 
 def creerCompte(pseudo):
-
+    
     conn = sqlite3.connect('base_tweet.db');
     # On insert l'utilisateurs
     cursor = conn.cursor();
@@ -315,7 +375,7 @@ def creerCompte(pseudo):
     cursor.execute("""
         INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
     conn.commit();
-
+    
     return utilisateurExiste(pseudo);
 
 
@@ -323,15 +383,15 @@ def creerCompte(pseudo):
 def abonne (abonne, utilisateurSuivi):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
-
+    
     id_abonne = getIdDeUtilisateur(abonne);
-    utilisateurSuivi = getIdDeUtilisateur(utilisateurSuivi);
-
-    data = {"id_abonne" : id_abonne, "id_user" : utilisateurSuivi}
+    id_UtilisateurSuivi = getIdDeUtilisateur(utilisateurSuivi);
+    
+    data = {"id_abonne" : id_abonne, "id_user" : id_UtilisateurSuivi}
     cursor.execute("""
         INSERT INTO Abonnement(id_Abonne, id_Utilisateur) VALUES(:id_abonne, :id_user)""", data)
     conn.commit();
-
+    
     return abonnementExiste(abonne, utilisateurSuivi);
 
 
@@ -341,8 +401,9 @@ def desabonne (abonne, utilisateurSuivi):
     cursor = conn.cursor();
     
     id_abonne = getIdDeUtilisateur(abonne);
+    id_UtilisateurSuivi = getIdDeUtilisateur(utilisateurSuivi);
     
-    data = {"id_abonne" : id_abonne, "id_user" : utilisateurSuivi}
+    data = {"id_abonne" : id_abonne, "id_user" : id_UtilisateurSuivi}
     cursor.execute("""
         DELETE FROM Abonnement where id_Abonne = :id_abonne and id_Utilisateur = :id_user""", data)
     conn.commit();
@@ -355,11 +416,12 @@ def desabonne (abonne, utilisateurSuivi):
 def abonnementExiste(abonne, utilisateurSuivi):
     
     conn = sqlite3.connect('base_tweet.db');
-
+    
     id_abonne = getIdDeUtilisateur(abonne);
-
+    id_UtilisateurSuivi = getIdDeUtilisateur(utilisateurSuivi);
+    
     cursor = conn.cursor();
-    data = {"id_Abonne" : id_abonne , "id_Utilisateur" : utilisateurSuivi}
+    data = {"id_Abonne" : id_abonne , "id_Utilisateur" : id_UtilisateurSuivi}
     cursor.execute("""SELECT * FROM Abonnement where id_Abonne = :id_Abonne and id_Utilisateur=:id_Utilisateur""", data)
     abonnement = cursor.fetchall();
     
@@ -367,14 +429,14 @@ def abonnementExiste(abonne, utilisateurSuivi):
         return True;
     else :
         return False;
-        
+
 
 
 
 def utilisateurExiste(pseudo):
-
+    
     conn = sqlite3.connect('base_tweet.db');
-
+    
     cursor = conn.cursor();
     data = {"pseudo" : pseudo}
     cursor.execute("""SELECT * FROM Utilisateur where pseudo= :pseudo""", data)
@@ -386,17 +448,18 @@ def utilisateurExiste(pseudo):
 
 
 
-def tweet(pseudo, message):
+def envoieTweet(pseudo, message):
     
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
     conn = sqlite3.connect('base_tweet.db');
     
     id_Utilisateur = getIdDeUtilisateur(pseudo);
-    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
+    
     cursor = conn.cursor();
     data = {"id_Utilisateur" : id_Utilisateur , "message" : message, "date" : date}
     cursor.execute("""
         INSERT INTO Tweet(id_Utilisateur, text, date_Publication) VALUES(:id_Utilisateur, :message, :date)""", data)
-
+    
     conn.commit();
     
     return tweetExiste(pseudo, message);
@@ -415,7 +478,7 @@ def tweetExiste(pseudo, message):
     cursor.execute("""SELECT * FROM Tweet where id_Utilisateur= :id_Utilisateur and text= :message""", data)
     
     tweet = cursor.fetchall();
-
+    
     if (len(tweet) > 0) :
         return True
     else :
@@ -425,7 +488,7 @@ def tweetExiste(pseudo, message):
 
 
 def getIdDeUtilisateur(pseudo) :
-
+    
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
     data = {"pseudo" : pseudo}
@@ -438,20 +501,83 @@ def getIdDeUtilisateur(pseudo) :
 
 
 
+def getAbonnementsPourUtilisateur(id):
+    
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    data = {"id" : id}
+    
+    cursor.execute("""SELECT id_Utilisateur FROM Abonnement where id_Abonne= :id""", data)
+    abonnements = cursor.fetchall();
+    
+    listeAbonnements = [];
+    
+    for abonnement in abonnements :
+        listeAbonnements.append(abonnement[0]);
+    
+    return listeAbonnements;
+
+
+
+
+def getPseudoPourId(id):
+    
+    conn = sqlite3.connect('base_tweet.db');
+    cursor = conn.cursor();
+    data = {"id" : id}
+    
+    cursor.execute("""SELECT pseudo FROM Utilisateur where id= :id""", data)
+    users = cursor.fetchall();
+    pseudo = users[0];
+    return pseudo[0];
+
+
+
+
+
+def lanceAvertissement(pseudo, conn):
+    
+    
+    id_U = getIdDeUtilisateur(pseudo);
+    
+    for addr, listeAbo in dictionnaireAddrAbo.items() :
+        
+        if id_U in listeAbo :
+            conn = dictionnaireAddrConn[addr];
+            message = "De nouveaux tweets sont disponibles pour vous\n";
+            conn.sendall(message.encode());
+
+
+
+
+
+
+
+
+def metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr):
+    #On va chercher les abo de l'utilisateur
+    listeAbonnements = getAbonnementsPourUtilisateur(getIdDeUtilisateur(pseudoUtilisateur));
+    
+    #On stocke la liste dans le dictionnaire
+    dictionnaireAddrAbo[addr] = listeAbonnements;
+
+
+
+
 
 def reinitialiseBase():
-
+    
     conn = sqlite3.connect('base_tweet.db');
     
     #----- PARTIE UTILISATEUR -----
-
+    
     #On supprime la table si elle existe
     cursor = conn.cursor();
     cursor.execute("""
         DROP TABLE IF EXISTS Utilisateur;
         """);
     conn.commit();
-
+    
     # On crée la nouvelle
     cursor = conn.cursor();
     cursor.execute("""
@@ -459,30 +585,30 @@ def reinitialiseBase():
         id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         pseudo varchar(255)
         )
-    """)
+        """)
     conn.commit();
-
-
+    
+    
     # On insert des utilisateurs
     cursor = conn.cursor();
     data = {"pseudo" : "utilisateur1"}
     cursor.execute("""
         INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
     conn.commit();
-
+    
     cursor = conn.cursor();
     data = {"pseudo" : "utilisateur2"}
     cursor.execute("""
         INSERT INTO Utilisateur(pseudo) VALUES(:pseudo)""", data)
     conn.commit();
-
-
+    
+    
     #On affiche les utilisateurs
     afficheUtilisateurs();
-
-
-
-
+    
+    
+    
+    
     #----- PARTIE TWEET -----
     
     #On supprime la table si elle existe
@@ -529,12 +655,12 @@ def reinitialiseBase():
     
     #On affiche les utilisateurs
     afficheTweets();
-
-
-
-
+    
+    
+    
+    
     #----- PARTIE ABONNEMENT -----
-
+    
     #On supprime la table si elle existe
     cursor = conn.cursor();
     cursor.execute("""
@@ -552,8 +678,8 @@ def reinitialiseBase():
         )
         """)
     conn.commit();
-    
-    
+
+
 
 
 
@@ -561,7 +687,7 @@ def reinitialiseBase():
 
 
 def afficheUtilisateurs():
-
+    
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
     cursor.execute("""SELECT * FROM Utilisateur""")
@@ -591,7 +717,7 @@ def afficheAbonnements():
 
 
 def afficheActu(pseudo):
-
+    
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
     # changer utilisateur2 par l'id de l'utilisateur courrant
@@ -604,9 +730,9 @@ def afficheActu(pseudo):
         tweets = chercheTweet(abo[0]);
         
         for tweet in tweets:
-            listeTweet.append(tweet);
+            listeTweet.append(Tweet(tweet[1],tweet[3],tweet[2]));
 
-    return listeTweet;
+return listeTweet;
 
 
 
@@ -618,9 +744,15 @@ def chercheTweet(id_Utilisateur):
     data = {"id_Utilisateur" : id_Utilisateur};
     cursor.execute("""SELECT * FROM Tweet WHERE id_Utilisateur = :id_Utilisateur""",data);
     tweets = cursor.fetchall();
-
+    
     return tweets;
 
+
+
+
+
+def getTweetKey(tweet):
+    return tweet.date;
 
 
 
@@ -646,30 +778,76 @@ def traitementDate(date):
     return date
 
 
+
+
+
+
 action = input("Que voulez-vous faire ? ");
 
 if(action == "servtw") :
-
+    
     #On démarre le serveur
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
-
+    
     #On écoute le port 50007
     s.bind(("localhost", 50007));
-
+    
     #On attend et on n'accepte qu'une seule connexion en même temps
-    s.listen(1);
-
-
-        
+    s.listen(5);
+    
+    
+    
     while True:
+        
+        
+        # On actualise la liste des clients qui veulent se connecter
+        # On attend maximum 50ms
+        connexions_demandees, wlist, xlist = select.select([s], [], [], 0.05);
+        
+        # On boucle sur les connexions qui ont été demandées
+        for connexion in connexions_demandees:
+            connexion_avec_client, addr = connexion.accept();
+            # On ajoute le socket connecté à la liste des clients
+            dictionnaireAddrConn[addr] = connexion_avec_client;
+        
+        
+        
+        
+        
+        
+        # Une fois qu'on a actualisé la liste des clients connectés,
+        # On detecte ceux qui envoient
+        # On attend encore 50ms maximum
+        
+        # On utilise un bloc try car si la liste est vide = exception
+        
+        clients_a_lire = [];
+        try:
+            clients_a_lire, wlist, xlist = select.select(dictionnaireAddrConn.values(), [], [], 0.05);
     
-        conn, addr = s.accept();
-    
-        #On recupere les données
-        print("Donnees recues par : "+str(addr));
-        data = conn.recv(1024);
-        #On trie ce qu'on a recu
-        trieData(conn, data);
+        except select.error:
+            pass
+        else:
+            
+            # On parcourt la liste des clients à lire
+            for client in clients_a_lire:
+                
+                data = client.recv(1024)
+                
+                addr = "";
+                
+                for addresse, co in dictionnaireAddrConn.items():
+                    if co == client:
+                        addr = addresse;
+                
+                print(addr);
+                
+                # Peut planter si le message contient des caractères spéciaux
+                trieData(addr, client, data);
+
+
+
+
 
 
 elif(action == "base") :
@@ -677,8 +855,14 @@ elif(action == "base") :
 
 
 
+else :
+    
+    print("Commande inconnue");
 
 
-        
+
+
+
+
 
 
