@@ -46,29 +46,34 @@ class User:
     
     #def deconnecte ():
     
-    
+    """
+    Cette methode permet d'ajouter un utilisateur a l'utilisateur courrant
+    Le pseudo de l'utilisateur et passe en parametre.
+    """ 
     @staticmethod
     def metUtilisateurCourant(pseudo):
         User.currentUser = pseudo;
     
-    
+    """
+    Cette methode permet de verifier s'il y a bien un utilisateur de connecte.
+    """ 
     @staticmethod
     def utilisateurEstConnecte():
         return (not (User.currentUser==""));
     
-    
-    
-    @staticmethod
-    def connecteUtilisateur(pseudo):
-        User.currentUser = pseudo;
-    
-    
+    """
+    Cette méthode permet de passer l'utilisateur courrant a vide 
+    ce qui revient a le deconnecter.
+    """    
     @staticmethod
     def deconnecteUtilisateur():
         User.currentUser = "";
 
 
-
+    """
+    Cette methode permet d'envoyer une action au Programme Centrale.py
+    l'action est passer en parametre.
+    """
 def envoi(action):
     
     #On envoie l'action
@@ -77,7 +82,11 @@ def envoi(action):
 
 
 
-
+"""
+Cette methode permet de traiter les réponses envoyer par Centrale.py.
+Dans cette methode on va chercher a savoir si l'utilisateur et connecter ou non 
+afin de lui proposer les bonnes actions realisable.
+"""
 def traiteReponse(reponse):
     
     
@@ -111,7 +120,10 @@ def traiteReponse(reponse):
 
 
 
-
+"""
+Cette methode permet de faire en sorte que le programme 
+ne se bloque pas quand il attend la reponse de l'utilisateur pour la methode user_input_actions
+"""
 def proposeActions():
     
     
@@ -124,7 +136,10 @@ def proposeActions():
 
 
 
-
+"""
+Cette methode permet au programme de demander a l'utilisateur ce qu'il veux faire
+(utilisateur connecte)
+"""
 def user_input_actions():
     
     print("Que voulez-vous faire ?");
@@ -132,7 +147,10 @@ def user_input_actions():
     User.response = input()
 
 
-
+"""
+Cette methode est identique a propose action cependant elle attend la reponse a la methode
+user_input_debut
+"""
 def actionsDebut():
     
     User.response = None;
@@ -143,7 +161,10 @@ def actionsDebut():
     User.thread.start()
 
 
-
+"""
+Cette methode est identique a la methode user_input_actions elle propose simplement des actions differentes
+(utilisateur deconnecte)
+"""
 def user_input_debut():
     
     print("Que voulez-vous faire ?");
@@ -151,7 +172,10 @@ def user_input_debut():
     User.response = input();
 
 
-
+"""
+Le main du programme il va donc boucler a l'infini afin de proposer des actions 
+a l'utilisateur.
+"""
 def main():
     pass
 
