@@ -254,9 +254,6 @@ def trieData (conn, data) :
         #On supprime l'action
         message = action.replace("tweet -m", "");
         
-        #On supprime d'éventuels espaces
-        message = message.replace(" ", "");
-        
         #On test que l'utilisateur existe bien
         tweetEnregistre = tweet(pseudoUtilisateur, message);
         
@@ -394,11 +391,11 @@ def tweet(pseudo, message):
     conn = sqlite3.connect('base_tweet.db');
     
     id_Utilisateur = getIdDeUtilisateur(pseudo);
-    
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
     cursor = conn.cursor();
-    data = {"id_Utilisateur" : id_Utilisateur , "message" : message}
+    data = {"id_Utilisateur" : id_Utilisateur , "message" : message, "date" : date}
     cursor.execute("""
-        INSERT INTO Tweet(id_Utilisateur, text) VALUES(:id_Utilisateur, :message)""", data)
+        INSERT INTO Tweet(id_Utilisateur, text, date_Publication) VALUES(:id_Utilisateur, :message, :date)""", data)
 
     conn.commit();
     
