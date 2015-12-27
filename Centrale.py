@@ -18,13 +18,19 @@ dictionnaireAddrAbo = {};
 
 dictionnaireAddrConn = {};
 
-
+"""
+Cette methode premet au programme de determiner quelle est 
+l'action choisie par l'utilisateur et de lancer les methode 
+necessaire au bon fonctionnement de l'action
+addr : l'adresse de l'utilisateur
+conn : le client d'un utilisateur
+data : action brut d'un utilisateur encodee
+"""
 def trieData (addr, conn, data) :
     
     
     # On récupère l'action
     actionBrut = data.decode();
-    
     print(actionBrut);
     
     # On sépare l'action du pseudo de l'utilisateur
@@ -35,7 +41,7 @@ def trieData (addr, conn, data) :
     action = actionBrut.split(":")[1];
     
     print(action);
-    
+    # creation d'un nouveau compte
     if ("comptetw -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -79,10 +85,7 @@ def trieData (addr, conn, data) :
         #conn.close();
     
         afficheUtilisateurs();
-    
-    
-    
-    
+    # connexion d'un utilisateur
     elif ("tweet -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -123,13 +126,7 @@ def trieData (addr, conn, data) :
             res = ("Erreur : Cet utilisateur n'existe pas : "+pseudo+"\n");
 
         conn.sendall(res.encode())
-
-
-
-
-
-
-
+    # deconnexion d'un utilisateur
     elif ( "disconnect -p" in action) :
     
         # On vérifie que l'utilisateur est bien connecte
@@ -145,9 +142,7 @@ def trieData (addr, conn, data) :
         print("Vous avez ete deconnecte\n");
         res = ("Vous avez ete deconnecte\n");
         conn.sendall(res.encode())
-
-
-
+    # desobonnement a un utilisateur
     elif ("desabonnement -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -207,12 +202,7 @@ def trieData (addr, conn, data) :
         conn.sendall(res.encode())
     
         afficheAbonnements();
-    
-    
-    
-    
-    
-    
+    # abonnement a un utilisateur
     elif ("abonnement -p" in action) :
         
         # On vérifie que l'utilisateur est bien connecte
@@ -272,11 +262,7 @@ def trieData (addr, conn, data) :
         conn.sendall(res.encode())
     
         afficheAbonnements();
-    
-    
-    
-    
-    
+    # publication d'un tweet
     elif ("tweet -m" in action) :
         
         
@@ -320,9 +306,7 @@ def trieData (addr, conn, data) :
         print("On lance les avertissements");
         # On lance l'avertissement aux abonnés
         lanceAvertissement(pseudoUtilisateur, conn);
-
-
-
+    # affichage de la file d'actualite
     elif("actu" in action) :
     
     
@@ -350,18 +334,18 @@ def trieData (addr, conn, data) :
 
         conn.sendall(strTweets.encode());
         #conn.close();
-    
-    
+    # commande non suporte par le programme
     else :
         print("Erreur : Commande inconnue.");
         res = ("Erreur : Commande inconnue.\n");
         conn.sendall(res.encode())
         conn.close();
 
-
-
-
-
+"""
+Cette methode permet la creation d'un compte en base de donnees
+on passe le pseudo de l'utilisateur en parametre afin qu'il soit
+enregistre en base de donnees
+"""
 def creerCompte(pseudo):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -374,8 +358,11 @@ def creerCompte(pseudo):
     
     return utilisateurExiste(pseudo);
 
-
-
+"""
+Cette methode permet d'ajouter un abonnement a un utilisateur
+abonne : l'utilisateur qui s'abonne
+utilisateurSuivi : l'utilisateur auquel on s'abonne.
+"""
 def abonne (abonne, utilisateurSuivi):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
@@ -390,8 +377,11 @@ def abonne (abonne, utilisateurSuivi):
     
     return abonnementExiste(abonne, utilisateurSuivi);
 
-
-
+"""
+Cette methode permet de supprimer un abonnement a un utilisateur
+abonne : l'utilisateur qui se desabonne
+utilisateurSuivi : l'utilisateur auquel on se desabonne.
+"""
 def desabonne (abonne, utilisateurSuivi):
     conn = sqlite3.connect('base_tweet.db');
     cursor = conn.cursor();
@@ -406,9 +396,12 @@ def desabonne (abonne, utilisateurSuivi):
     
     return not abonnementExiste(abonne, utilisateurSuivi);
 
-
-
-
+"""
+Cette methode permet de savoir si un abonnement existe bien entre
+deux utilisateurs.
+abonne : l'utilisateur qui est abonne
+utilisateurSuivi : l'utilisateur auquel on est abonne.
+"""
 def abonnementExiste(abonne, utilisateurSuivi):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -426,9 +419,10 @@ def abonnementExiste(abonne, utilisateurSuivi):
     else :
         return False;
 
-
-
-
+"""
+Cette methode verifie l'existance d'un utilisateur
+on passe ne parametre le pseudo de l'utilisateur a verifier
+"""
 def utilisateurExiste(pseudo):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -442,8 +436,11 @@ def utilisateurExiste(pseudo):
     else :
         return False
 
-
-
+"""
+Cette methode permet le publication d'un tweet
+pseudo : le pseudo de l'utilisateur qui publie le tweet
+message : le message contenu dans le tweet
+"""
 def envoieTweet(pseudo, message):
     
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
@@ -460,9 +457,11 @@ def envoieTweet(pseudo, message):
     
     return tweetExiste(pseudo, message);
 
-
-
-
+"""
+Cette methode permet de verifier qu'un tweet existe
+pseudo : le pseudo de l'utilisateur qui a publie le tweet
+message : le message contenu dans le tweet
+"""
 def tweetExiste(pseudo, message):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -480,9 +479,11 @@ def tweetExiste(pseudo, message):
     else :
         return False
 
-
-
-
+"""
+Cette methode permet de recuperer l'id d'un utilisateur
+grace a son pseudo
+on passe donc le pseudo de l'utilisateur rechercher en parametre.
+"""
 def getIdDeUtilisateur(pseudo) :
     
     conn = sqlite3.connect('base_tweet.db');
@@ -494,9 +495,10 @@ def getIdDeUtilisateur(pseudo) :
     abonne = users[0];
     return abonne[0];
 
-
-
-
+"""
+Cette methode permet de recuperer tous les abonnement d'un utilisateur
+on passe l'id d'un utilisateur en parametre
+"""
 def getAbonnementsPourUtilisateur(id):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -513,9 +515,11 @@ def getAbonnementsPourUtilisateur(id):
     
     return listeAbonnements;
 
-
-
-
+"""
+Cette methode permet de recuperer le pseudo d'un 
+utilisateur a partir de son idon passe donc l'id de
+l'utilisateur en parametre
+"""
 def getPseudoPourId(id):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -527,10 +531,12 @@ def getPseudoPourId(id):
     pseudo = users[0];
     return pseudo[0];
 
-
-
-
-
+"""
+Cette methode permet au programme de tenir informer les abonnes d'un
+utilisateur qu'il vient de publier un tweet
+pseudo : pseudo de l'utilisateur qui publie le tweet
+conn : le client d'un utilisateur
+"""
 def lanceAvertissement(pseudo, conn):
     
     
@@ -543,13 +549,10 @@ def lanceAvertissement(pseudo, conn):
             message = "De nouveaux tweets sont disponibles pour vous\n";
             conn.sendall(message.encode());
 
-
-
-
-
-
-
-
+"""
+Cette methode permet de mettre a jour la liste des abonnes d'un
+utilisateur en fonction de son pseudo et de son adresse.
+"""
 def metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr):
     #On va chercher les abo de l'utilisateur
     listeAbonnements = getAbonnementsPourUtilisateur(getIdDeUtilisateur(pseudoUtilisateur));
@@ -557,10 +560,9 @@ def metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr):
     #On stocke la liste dans le dictionnaire
     dictionnaireAddrAbo[addr] = listeAbonnements;
 
-
-
-
-
+"""
+Cette methode permet de reinitialiser la base de donnees
+"""
 def reinitialiseBase():
     
     conn = sqlite3.connect('base_tweet.db');
@@ -675,13 +677,9 @@ def reinitialiseBase():
         """)
     conn.commit();
 
-
-
-
-
-
-
-
+"""
+Cette methode permet d'afficher tous les utilisateurs
+"""
 def afficheUtilisateurs():
     
     conn = sqlite3.connect('base_tweet.db');
@@ -690,9 +688,9 @@ def afficheUtilisateurs():
     users = cursor.fetchall();
     print(users)
 
-
-
-
+"""
+Cette methode permet d'afficher tous les tweets
+"""
 def afficheTweets():
     
     conn = sqlite3.connect('base_tweet.db');
@@ -701,7 +699,9 @@ def afficheTweets():
     tweets = cursor.fetchall();
     print(tweets)
 
-
+"""
+Cette methode permet d'afficher tous les abonnements
+"""
 def afficheAbonnements():
     
     conn = sqlite3.connect('base_tweet.db');
@@ -710,8 +710,12 @@ def afficheAbonnements():
     abonnements = cursor.fetchall();
     print(abonnements)
 
-
-
+"""
+Cette methode permet a un utilisateur d'afficher
+sa file d'actualite
+On passe donc en parametre le pseudo de l'utilisateur 
+qui veux afficher sa file d'actualite
+"""
 def afficheActu(pseudo):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -730,9 +734,11 @@ def afficheActu(pseudo):
 
     return listeTweet;
 
-
-
-
+"""
+Cette methode permet de rechercher les tweets 
+d'un utilisateur
+on passe donc l'id de l'utilisateur en parametre
+"""
 def chercheTweet(id_Utilisateur):
     
     conn = sqlite3.connect('base_tweet.db');
@@ -743,13 +749,12 @@ def chercheTweet(id_Utilisateur):
     
     return tweets;
 
-
-
-
-
+"""
+Cette methode permet de retourner la date d'un tweet
+on passe donc un tweet en parametre
+"""
 def getTweetKey(tweet):
     return tweet.date;
-
 
 
 #def lePlusRecent(liste_Tweets):
@@ -765,7 +770,11 @@ def getTweetKey(tweet):
 #        tweet = "Les utilisateurs pour lesquels vous etes abonne n'ont rien tweeter";
 #    return tweet;
 
-
+"""
+Cette methode permet de passer une date string
+en une date datetime
+on passe donc une date string en parametre
+"""
 def traitementDate(date):
     dateHeure = date.split(" ");
     dateSplit = dateHeure[0].split("-");
@@ -773,11 +782,11 @@ def traitementDate(date):
     date = datetime.datetime(int(dateSplit[2]),int(dateSplit[1]),int(dateSplit[0]),int(heureSplit[0]),int(heureSplit[1]),int(heureSplit[2]));
     return date
 
-
-
-
-
-
+"""
+Voici ce qui est le main de ce programme il vas 
+soit ecouter les utilisateurs 
+soit mettre a jour la base de donnees
+"""
 action = input("Que voulez-vous faire ? ");
 
 if(action == "servtw") :
