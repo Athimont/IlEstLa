@@ -18,6 +18,8 @@ dictionnaireAddrAbo = {};
 
 dictionnaireAddrConn = {};
 
+
+
 """
 Cette methode premet au programme de determiner quelle est 
 l'action choisie par l'utilisateur et de lancer les methode 
@@ -50,7 +52,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre deconnecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            #conn.close();
             return False;
     
     
@@ -82,8 +83,8 @@ def trieData (addr, conn, data) :
                 reponse = ("Erreur : Une erreur s'est produite lors de votre inscription, veuillez reessayer\n");
 
         conn.sendall(reponse.encode());
-        #conn.close();
-    
+
+
         afficheUtilisateurs();
     # connexion d'un utilisateur
     elif ("tweet -p" in action) :
@@ -94,7 +95,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre deconnecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            #conn.close();
             return False;
     
     
@@ -135,7 +135,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            #conn.close();
             return False;
         
         
@@ -151,7 +150,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            #conn.close();
             return False;
         
         
@@ -211,7 +209,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            conn.close();
             return False;
     
     
@@ -272,7 +269,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            conn.close();
             return False;
         
         
@@ -280,14 +276,21 @@ def trieData (addr, conn, data) :
         
         #On supprime l'action
         message = action.replace("tweet -m", "");
-        
-        #On supprime d'éventuels espaces
-        message = message.replace(" ", "");
-        
+
+
+        #On vérifie que le message n'éxcède pas 120 charactère
+        if( len(message) > 120) :
+            print("Erreur : Un tweet ne peut pas avoir plus de 120 charactères\n");
+            res = ("Erreur : Un tweet ne peut pas avoir plus de 120 charactères\n");
+            conn.sendall(res.encode())
+            return False;
+
+
+
         #On test que l'utilisateur existe bien
         tweetEnregistre = envoieTweet(pseudoUtilisateur, message);
-        
-        
+
+
         if (tweetEnregistre):
             print("Votre tweet a bien ete enregistre\n");
             res = ("Votre tweet a bien ete enregistre\n");
@@ -297,8 +300,7 @@ def trieData (addr, conn, data) :
             res = ("Erreur : Une erreur s'est produite lors de votre tweet\n");
     
         conn.sendall(res.encode())
-        #conn.close();
-        
+
         afficheTweets();
         
         time.sleep(0.5);
@@ -306,6 +308,8 @@ def trieData (addr, conn, data) :
         print("On lance les avertissements");
         # On lance l'avertissement aux abonnés
         lanceAvertissement(pseudoUtilisateur, conn);
+            
+            
     # affichage de la file d'actualite
     elif("actu" in action) :
     
@@ -316,7 +320,6 @@ def trieData (addr, conn, data) :
             print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
             conn.sendall(res.encode())
-            conn.close();
             return False;
     
     
@@ -333,13 +336,71 @@ def trieData (addr, conn, data) :
 
 
         conn.sendall(strTweets.encode());
-        #conn.close();
+
+
+    # affichage de la liste des abonnements de l'utilisateur
+    elif("liste abonnements" in action) :
+    
+
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
+        
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            return False;
+        
+        
+        actionOk = True;
+        abonnements = getAbonnementsPourUtilisateur(getIdDeUtilisateur(pseudoUtilisateur));
+
+        strAbonnements = "Mes abonnements :\n";
+
+        for abonnement in abonnements :
+            strAbonnements = strAbonnements+getPseudoPourId(abonnement)+"\n";
+        
+        
+        conn.sendall(strAbonnements.encode());
+
+
+
+    # affichage de la liste des utilisateurs
+    elif("liste utilisateurs" in action) :
+    
+    
+        # On vérifie que l'utilisateur est bien connecte
+        if ( pseudoUtilisateur == ""):
+        
+            print("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            res = ("Erreur : Vous devez etre connecte pour effectuer cette action\n");
+            conn.sendall(res.encode())
+            return False;
+    
+    
+        actionOk = True;
+        utilisateurs = getTousLesUtilisateurs();
+        
+        strUtilisateurs = "Liste des utilisateurs :\n";
+        
+        for utilisateur in utilisateurs :
+            strUtilisateurs = strUtilisateurs+utilisateur[1]+"\n";
+
+
+        conn.sendall(strUtilisateurs.encode());
+
+
+
+
     # commande non suporte par le programme
     else :
         print("Erreur : Commande inconnue.");
         res = ("Erreur : Commande inconnue.\n");
         conn.sendall(res.encode())
-        conn.close();
+
+
+
+
+
 
 """
 Cette methode permet la creation d'un compte en base de donnees
@@ -357,6 +418,10 @@ def creerCompte(pseudo):
     conn.commit();
     
     return utilisateurExiste(pseudo);
+
+
+
+
 
 """
 Cette methode permet d'ajouter un abonnement a un utilisateur
@@ -377,6 +442,10 @@ def abonne (abonne, utilisateurSuivi):
     
     return abonnementExiste(abonne, utilisateurSuivi);
 
+
+
+
+
 """
 Cette methode permet de supprimer un abonnement a un utilisateur
 abonne : l'utilisateur qui se desabonne
@@ -395,6 +464,10 @@ def desabonne (abonne, utilisateurSuivi):
     conn.commit();
     
     return not abonnementExiste(abonne, utilisateurSuivi);
+
+
+
+
 
 """
 Cette methode permet de savoir si un abonnement existe bien entre
@@ -419,6 +492,10 @@ def abonnementExiste(abonne, utilisateurSuivi):
     else :
         return False;
 
+
+
+
+
 """
 Cette methode verifie l'existance d'un utilisateur
 on passe ne parametre le pseudo de l'utilisateur a verifier
@@ -435,6 +512,28 @@ def utilisateurExiste(pseudo):
         return True
     else :
         return False
+
+
+
+
+
+
+"""
+Cette methode récupère tous les utilisateurs de la base
+"""
+def getTousLesUtilisateurs():
+    
+    conn = sqlite3.connect('base_tweet.db');
+    
+    cursor = conn.cursor();
+    cursor.execute("""SELECT * FROM Utilisateur""")
+    users = cursor.fetchall();
+    return users;
+
+
+
+
+
 
 """
 Cette methode permet le publication d'un tweet
@@ -456,6 +555,10 @@ def envoieTweet(pseudo, message):
     conn.commit();
     
     return tweetExiste(pseudo, message);
+
+
+
+
 
 """
 Cette methode permet de verifier qu'un tweet existe
@@ -479,6 +582,10 @@ def tweetExiste(pseudo, message):
     else :
         return False
 
+
+
+
+
 """
 Cette methode permet de recuperer l'id d'un utilisateur
 grace a son pseudo
@@ -494,6 +601,10 @@ def getIdDeUtilisateur(pseudo) :
     users = cursor.fetchall();
     abonne = users[0];
     return abonne[0];
+
+
+
+
 
 """
 Cette methode permet de recuperer tous les abonnement d'un utilisateur
@@ -515,6 +626,10 @@ def getAbonnementsPourUtilisateur(id):
     
     return listeAbonnements;
 
+
+
+
+
 """
 Cette methode permet de recuperer le pseudo d'un 
 utilisateur a partir de son idon passe donc l'id de
@@ -530,6 +645,10 @@ def getPseudoPourId(id):
     users = cursor.fetchall();
     pseudo = users[0];
     return pseudo[0];
+
+
+
+
 
 """
 Cette methode permet au programme de tenir informer les abonnes d'un
@@ -549,6 +668,10 @@ def lanceAvertissement(pseudo, conn):
             message = "De nouveaux tweets sont disponibles pour vous\n";
             conn.sendall(message.encode());
 
+
+
+
+
 """
 Cette methode permet de mettre a jour la liste des abonnes d'un
 utilisateur en fonction de son pseudo et de son adresse.
@@ -559,6 +682,10 @@ def metAJourAbonnementPourPseudoEtAdresse(pseudoUtilisateur, addr):
     
     #On stocke la liste dans le dictionnaire
     dictionnaireAddrAbo[addr] = listeAbonnements;
+
+
+
+
 
 """
 Cette methode permet de reinitialiser la base de donnees
@@ -677,6 +804,10 @@ def reinitialiseBase():
         """)
     conn.commit();
 
+
+
+
+
 """
 Cette methode permet d'afficher tous les utilisateurs
 """
@@ -687,6 +818,10 @@ def afficheUtilisateurs():
     cursor.execute("""SELECT * FROM Utilisateur""")
     users = cursor.fetchall();
     print(users)
+
+
+
+
 
 """
 Cette methode permet d'afficher tous les tweets
@@ -699,6 +834,10 @@ def afficheTweets():
     tweets = cursor.fetchall();
     print(tweets)
 
+
+
+
+
 """
 Cette methode permet d'afficher tous les abonnements
 """
@@ -709,6 +848,10 @@ def afficheAbonnements():
     cursor.execute("""SELECT * FROM Abonnement""")
     abonnements = cursor.fetchall();
     print(abonnements)
+
+
+
+
 
 """
 Cette methode permet a un utilisateur d'afficher
@@ -734,6 +877,10 @@ def afficheActu(pseudo):
 
     return listeTweet;
 
+
+
+
+
 """
 Cette methode permet de rechercher les tweets 
 d'un utilisateur
@@ -748,6 +895,10 @@ def chercheTweet(id_Utilisateur):
     tweets = cursor.fetchall();
     
     return tweets;
+
+
+
+
 
 """
 Cette methode permet de retourner la date d'un tweet
@@ -770,6 +921,10 @@ def getTweetKey(tweet):
 #        tweet = "Les utilisateurs pour lesquels vous etes abonne n'ont rien tweeter";
 #    return tweet;
 
+
+
+
+
 """
 Cette methode permet de passer une date string
 en une date datetime
@@ -781,6 +936,10 @@ def traitementDate(date):
     heureSplit = dateHeure[1].split(":");
     date = datetime.datetime(int(dateSplit[2]),int(dateSplit[1]),int(dateSplit[0]),int(heureSplit[0]),int(heureSplit[1]),int(heureSplit[2]));
     return date
+
+
+
+
 
 """
 Voici ce qui est le main de ce programme il vas 

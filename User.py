@@ -93,7 +93,7 @@ def traiteReponse(reponse):
     reponse = reponse.decode();
     
     # On affiche la réponse
-    print(reponse.decode());
+    print("\n"+reponse.decode());
     
     #On detecte si l'utilisateur vient de se connecter
     if("Vous etes bien connectes" in reponse.decode()) :
@@ -143,7 +143,7 @@ Cette methode permet au programme de demander a l'utilisateur ce qu'il veux fair
 def user_input_actions():
     
     print("Que voulez-vous faire ?");
-    print("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <utilisateur>\n3- Vous desabonnez : desabonnement -p <utilisateur> \n4- Vous déconnectez: disconnect -p <>\n5- Actualiser la file d'actualite: actu\n");
+    print("1- twitter : tweet –m <message> \n2- Vous abonnez : abonnement -p <utilisateur>\n3- Vous desabonnez : desabonnement -p <utilisateur> \n4- Voir la liste de vos abonnements : liste abonnements\n5- Vous déconnectez: disconnect -p <>\n6- Actualiser la file d'actualite: actu\n7- Voir la liste des utilisateurs : liste utilisateurs\n");
     User.response = input()
 
 
